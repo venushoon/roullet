@@ -40,20 +40,21 @@
   }
 
   /* 레이아웃 */
-  .wrap{display:grid;grid-template-columns:minmax(360px,1fr) 440px;gap:20px;height:100%;padding:20px}
+  .wrap{display:grid;grid-template-columns:minmax(360px,1fr) 480px;gap:20px;height:100%;padding:20px}
   .panel{background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--panel-line);border-radius:var(--radius);box-shadow:var(--shadow)}
   .left{position:relative;display:grid;grid-template-rows:auto 1fr;align-items:center;justify-items:center;padding:24px}
   .title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
   .title h1{font-size:18px;font-weight:800;margin:0;letter-spacing:.2px;opacity:.9}
 
+  /* 캔버스 박스(포인터/결과/버튼 모두 이 안에서 z-index 관리) */
   .canvas-box{position:relative;width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center}
-  canvas{width:100%;height:100%}
+  canvas{width:100%;height:100%;z-index:10}
 
-  /* 포인터(역삼각형) — 캔버스 컨테이너 내부에 고정 */
+  /* 포인터(역삼각형) — 컨테이너 기준으로 상단 중앙 고정 */
   .pointer{
     position:absolute; top:-6px; left:50%; transform:translateX(-50%);
     width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;
-    filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)); z-index:30;
+    filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)); z-index:50;
   }
 
   /* 중앙 시작 버튼 */
@@ -61,17 +62,17 @@
     position:absolute; inset:auto; width:160px; height:160px; border-radius:50%;
     display:grid; place-items:center; font-weight:900; font-size:22px; color:#fff;
     background: radial-gradient(circle at 35% 30%, #ffa142, #ff7a1f 60%, #e4551a 100%);
-    border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none; z-index:10;
+    border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none; z-index:40;
   }
   .center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
 
-  /* 결과: 하단 중앙(시작 버튼 미가림) */
+  /* 결과: 하단 중앙(시작 버튼 미가림) — 항상 맨 위 */
   .result-overlay{
-    position:absolute; left:0; right:0; bottom:10px; display:grid; place-items:center; pointer-events:none; z-index:20;
+    position:absolute; left:0; right:0; bottom:10px; display:grid; place-items:center; pointer-events:none; z-index:60;
   }
   .result-badge{
-    display:none; padding:14px 20px; border-radius:14px;
-    font-size:36px; font-weight:900; color:#fff;
+    display:none; padding:12px 16px; border-radius:12px;
+    font-size:34px; font-weight:900; color:#fff;
     background:#0b1139e6; border:2px solid #3b4bd4a6; box-shadow:0 18px 32px rgba(0,0,0,.45);
   }
 
@@ -85,17 +86,21 @@
   .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;font-size:14px;background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35);transition:transform .08s ease,filter .2s ease}
   .btn:active{transform:translateY(1px)} .btn:hover{filter:brightness(1.05)}
   .btn-ghost{background:var(--ghost-bg);border:1px solid var(--ghost-br);box-shadow:none;color:var(--ghost-tx)}
+  .btn-s{padding:8px 10px;font-size:12.5px;border-radius:10px;box-shadow:none}
   .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)}
   .btn-danger{background:linear-gradient(180deg,#ef4444,#dc2626)}
   .note{color:var(--muted);font-size:12px}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  table{width:100%;border-collapse:separate;border-spacing:0 8px}
-  td{padding:6px 4px}
-  td input[type="number"]{width:90px;padding:8px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
+  table{width:100%;border-collapse:separate;border-spacing:0 6px}
+  th,td{padding:8px 6px;font-size:14px}
+  th{color:var(--muted);font-weight:700}
+  .table{border:1px solid var(--panel-line);border-radius:12px;padding:10px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
+  .td-index{width:40px;color:var(--muted);text-align:right;padding-right:10px}
+  .td-label input{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
+  .td-weight input{width:90px;padding:9px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);text-align:right}
+  .td-actions{width:82px;text-align:right}
 
-  /* 토글 유틸 클래스 */
   .hidden{display:none !important}
-
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
 </style>
 </head>
@@ -106,13 +111,12 @@
       <div class="title">
         <h1>🎡 룰렛</h1>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost" id="btnReset">↺ 초기화</button>
-          <button class="btn btn-ghost" id="btnBig">🖥 대형</button>
+          <button class="btn btn-ghost btn-s" id="btnReset">↺ 초기화</button>
+          <button class="btn btn-ghost btn-s" id="btnBig">🖥 대형</button>
         </div>
       </div>
 
       <div class="canvas-box" id="canvasBox">
-        <!-- 포인터를 캔버스 컨테이너 내부에 고정 -->
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="wheel" width="920" height="920"></canvas>
         <button id="btnCenterStart" class="center-start">시작하기</button>
@@ -122,7 +126,6 @@
 
     <!-- RIGHT -->
     <aside class="panel right">
-      <!-- 입력/불러오기 -->
       <div class="section">
         <h2>입력 · 불러오기</h2>
         <div class="input-row">
@@ -131,33 +134,28 @@
         </div>
         <div class="grid-2" style="margin-top:8px">
           <button class="btn btn-ghost" id="btnToggleList">👁 항목 보기/숨기기</button>
-          <button class="btn btn-ghost" id="btnEditWeights">⚖️ 비중 편집</button>
-        </div>
-        <div class="grid-2" style="margin-top:8px">
           <button class="btn btn-ghost" id="btnLoadFile">📁 파일 불러오기 (.txt/.csv)</button>
-          <button class="btn btn-ghost" id="btnDownloadSamples">⬇ 샘플 내려받기</button>
           <input id="fileInput" type="file" accept=".txt,.csv" class="hidden" />
+          <button class="btn btn-ghost" id="btnDownloadSamples">⬇ 샘플 내려받기</button>
+          <button class="btn btn-ok" id="btnSave">💾 저장하기</button>
+          <button class="btn btn-danger btn-s" id="btnClearWeight">전체 비중 지우기</button>
         </div>
         <div class="note" style="margin-top:6px">
           • TXT: 줄마다 항목 · CSV: <code>label,weight</code> (weight 생략 가능)
         </div>
-        <div id="itemListBox" class="section hidden" style="margin-top:10px"></div>
-      </div>
 
-      <!-- 비중 편집 -->
-      <div class="section">
-        <h2>비중 편집 & 저장</h2>
-        <div class="grid-2" style="margin-bottom:8px">
-          <button class="btn btn-ok" id="btnSave">💾 저장하기</button>
-          <button class="btn btn-danger" id="btnClear">전체 비중 지우기</button>
-        </div>
-        <div class="note">• 미입력 시 동등 배분 · 일부만 입력 시 남은 비중을 미입력자에게 균등 분배(총 100 기준)</div>
-        <div id="weightEditor" class="hidden">
-          <table id="editTable"><thead><tr><td>항목</td><td>비중(0~)</td><td></td></tr></thead><tbody></tbody></table>
+        <!-- 항목+비중 편집 테이블(입력 직후 바로 표시) -->
+        <div id="editorWrap" class="table hidden" style="margin-top:10px">
+          <table>
+            <thead>
+              <tr><th class="td-index">#</th><th>항목</th><th style="width:110px">비중</th><th class="td-actions">작업</th></tr>
+            </thead>
+            <tbody id="itemTable"></tbody>
+          </table>
         </div>
       </div>
 
-      <!-- 옵션 -->
+      <!-- 옵션 & 기록 -->
       <div class="section">
         <h2>옵션</h2>
         <label style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -167,13 +165,11 @@
           <input id="chkTheme" type="checkbox" /> 밝은(프로젝터) 모드
         </label>
       </div>
-
-      <!-- 기록 -->
       <div class="section">
         <h2>추첨 기록</h2>
         <div class="grid-2" style="margin-bottom:8px">
-          <button class="btn btn-ghost" id="btnToggleLog">📝 기록 보기/숨기기</button>
-          <button class="btn btn-danger" id="btnClearLog">🗑 기록 삭제</button>
+          <button class="btn btn-ghost btn-s" id="btnToggleLog">📝 기록 보기/숨기기</button>
+          <button class="btn btn-danger btn-s" id="btnClearLog">🗑 삭제</button>
         </div>
         <div id="logBox" class="hidden" style="max-height:180px;overflow:auto;font-size:13px;opacity:.9"></div>
       </div>
@@ -184,13 +180,10 @@
 /* ===== Helpers ===== */
 const TWO_PI=Math.PI*2, POINTER_ANGLE=-Math.PI/2;
 const qs=id=>document.getElementById(id);
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const norm=a=> (a%TWO_PI + TWO_PI)%TWO_PI;
 const escapeHtml=s=>(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const fmtTime=d=>{const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`};
-const show=el=>el.classList.remove('hidden');
-const hide=el=>el.classList.add('hidden');
-const toggle=el=>el.classList.toggle('hidden');
+const show=el=>el.classList.remove('hidden'); const hide=el=>el.classList.add('hidden'); const toggle=el=>el.classList.toggle('hidden');
 
 /* ===== State ===== */
 let items=[];         // [{label, weight:null|number}]
@@ -203,96 +196,74 @@ const historyLog=[];
 const canvas=qs('wheel'), ctx=canvas.getContext('2d');
 const ipt=qs('itemInput');
 const resultBadge=qs('resultBadge');
-const weightEditor=qs('weightEditor');
-const editTableBody=document.querySelector('#editTable tbody');
-const itemListBox=qs('itemListBox');
-const logBox=qs('logBox');
-const fileInput=qs('fileInput');
-const btnCenterStart=qs('btnCenterStart');
+const editorWrap=qs('editorWrap'); const itemTable=qs('itemTable');
+const logBox=qs('logBox'); const fileInput=qs('fileInput');
 
 /* ===== Build segments (weights) ===== */
 function rebuildSegments(){
-  if(items.length===0){ segments=[]; drawWheel(); renderItemList(); return; }
+  if(items.length===0){ segments=[]; drawWheel(); return; }
   const n=items.length, weights=new Array(n).fill(0), unspecified=[];
   let sumSpecified=0;
   for(let i=0;i<n;i++){
     const w=Number(items[i].weight);
-    if(!isNaN(w) && w>0){ weights[i]=w; sumSpecified+=w; }
-    else unspecified.push(i);
+    if(!isNaN(w) && w>0){ weights[i]=w; sumSpecified+=w; } else unspecified.push(i);
   }
   if(sumSpecified===0){ for(let i=0;i<n;i++) weights[i]=100/n; }
   else{
-    const rem=Math.max(0,100-sumSpecified);
-    const share=unspecified.length? rem/unspecified.length : 0;
+    const rem=Math.max(0,100-sumSpecified); const share=unspecified.length? rem/unspecified.length : 0;
     for(const i of unspecified) weights[i]=share;
   }
-  const sum=weights.reduce((a,b)=>a+b,0)||1;
-  const fracs=weights.map(w=>w/sum);
-
+  const sum=weights.reduce((a,b)=>a+b,0)||1; const fracs=weights.map(w=>w/sum);
   segments=[]; let acc=0;
   for(let i=0;i<n;i++){
     const start=acc*TWO_PI, end=(acc+fracs[i])*TWO_PI;
-    segments.push({label:items[i].label,start,end,center:(start+end)/2,weight:weights[i]});
-    acc+=fracs[i];
+    segments.push({label:items[i].label,start,end,center:(start+end)/2,weight:weights[i]}); acc+=fracs[i];
   }
-  drawWheel(); renderItemList();
+  drawWheel();
 }
 
-/* ===== Draw wheel ===== */
+/* ===== Draw wheel (rim + slices) ===== */
 function drawWheel(){
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(angle);
-
   const R=Math.min(W,H)/2-36;
   const rimO=R+26,rimI=R+6, innerW=R+2;
 
   // rim + shadow
   ctx.save(); ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=18;
   ctx.beginPath(); ctx.arc(0,0,rimO,0,TWO_PI); ctx.fillStyle='#0a0c12'; ctx.fill(); ctx.restore();
-
   // carve
-  ctx.globalCompositeOperation='destination-out';
-  ctx.beginPath(); ctx.arc(0,0,rimI,0,TWO_PI); ctx.fill();
+  ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(0,0,rimI,0,TWO_PI); ctx.fill();
   ctx.globalCompositeOperation='source-over';
-
   // inner ring
   ctx.beginPath(); ctx.arc(0,0,innerW,0,TWO_PI); ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.stroke();
-
   // bolts
-  for(let i=0;i<8;i++){
-    const a=i*(TWO_PI/8), r=(rimO+rimI)/2, x=Math.cos(a)*r, y=Math.sin(a)*r;
+  for(let i=0;i<8;i++){ const a=i*(TWO_PI/8), r=(rimO+rimI)/2, x=Math.cos(a)*r, y=Math.sin(a)*r;
     ctx.beginPath(); ctx.arc(x,y,8,0,TWO_PI); ctx.fillStyle='#e6e8ef'; ctx.fill();
     ctx.beginPath(); ctx.arc(x,y,3.2,0,TWO_PI); ctx.fillStyle='#1b1e2a'; ctx.fill();
   }
-
   if(segments.length){
     for(let i=0;i<segments.length;i++){
       const s=segments[i], hue=Math.floor((360/segments.length)*i);
       ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,s.start,s.end); ctx.closePath();
       ctx.fillStyle=`hsl(${hue} 75% 52%)`; ctx.fill();
-      ctx.strokeStyle="rgba(5,10,30,.6)"; ctx.lineWidth=6;
-      ctx.beginPath(); ctx.arc(0,0,R,s.start,s.end); ctx.stroke();
+      ctx.strokeStyle="rgba(5,10,30,.6)"; ctx.lineWidth=6; ctx.beginPath(); ctx.arc(0,0,R,s.start,s.end); ctx.stroke();
 
       ctx.save(); ctx.rotate(s.center);
       const rr=R*0.72;
-      ctx.fillStyle="rgba(4,7,22,.35)";
-      roundedRect(ctx, rr-92, -22, 184, 44, 12); ctx.fill();
+      ctx.fillStyle="rgba(4,7,22,.35)"; roundedRect(ctx, rr-92, -22, 184, 44, 12); ctx.fill();
       ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.font="700 28px ui-sans-serif,system-ui,'Noto Sans KR'";
-      ctx.fillText(s.label, rr, 0);
+      ctx.font="700 28px ui-sans-serif,system-ui,'Noto Sans KR'"; ctx.fillText(s.label, rr, 0);
       ctx.restore();
     }
   }else{
     ctx.beginPath(); ctx.arc(0,0,R,0,TWO_PI); ctx.fillStyle='#3b4a9e'; ctx.fill();
   }
-
   // hub
   ctx.beginPath(); ctx.arc(0,0,80,0,TWO_PI);
-  const g=ctx.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a');
-  ctx.fillStyle=g; ctx.fill();
+  const g=ctx.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a'); ctx.fillStyle=g; ctx.fill();
   ctx.beginPath(); ctx.arc(0,0,90,0,TWO_PI); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=10; ctx.stroke();
-
   ctx.restore();
 }
 function roundedRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
@@ -307,18 +278,18 @@ function pickIndexWeighted(){
 function targetAngleForIndex(i){
   const desired = POINTER_ANGLE - segments[i].center;
   const delta = norm(desired - angle);
-  const turns = 6 + Math.floor(Math.random()*2); // 6~7
+  const turns = 6 + Math.floor(Math.random()*2);
   return angle + turns*TWO_PI + delta;
 }
 function spin(){
   if(spinning || segments.length===0) return;
-  hideResult(); spinning=true; btnCenterStart.disabled=true;
+  hide(resultBadge); spinning=true; qs('btnCenterStart').disabled=true;
   const idx=pickIndexWeighted(); const target=targetAngleForIndex(idx);
   const start=angle, duration=3600+Math.random()*1400, t0=performance.now();
   (function anim(now){
     const t=Math.min((now-t0)/duration,1), ease=1-Math.pow(1-t,3);
     angle=start+(target-start)*ease; drawWheel();
-    if(t<1) requestAnimationFrame(anim); else { angle=target; drawWheel(); onWin(idx); spinning=false; btnCenterStart.disabled=false; }
+    if(t<1) requestAnimationFrame(anim); else { angle=target; drawWheel(); onWin(idx); spinning=false; qs('btnCenterStart').disabled=false; }
   })(t0);
 }
 function getIndexAtPointer(){
@@ -329,17 +300,28 @@ function getIndexAtPointer(){
 function onWin(idx){
   const ptr=getIndexAtPointer(); const final=ptr>=0?ptr:idx;
   const pick=segments[final].label;
-  resultBadge.textContent = `🎉 ${pick}`;
-  show(resultBadge);
-  historyLog.unshift({t:new Date(), v:pick});
-  renderLog();
+  resultBadge.textContent = `🎉 ${pick}`; show(resultBadge);
+  historyLog.unshift({t:new Date(), v:pick}); renderLog();
   if(!allowDuplicate){
-    const k=items.findIndex(o=>o.label===pick); if(k>=0){ items.splice(k,1); rebuildSegments(); buildWeightEditor(); }
+    const k=items.findIndex(o=>o.label===pick); if(k>=0){ items.splice(k,1); rebuildSegments(); renderEditor(); }
   }
 }
-function hideResult(){ hide(resultBadge); }
 
-/* ===== Input / List ===== */
+/* ===== Editor (in-input layout) ===== */
+function renderEditor(){
+  // 테이블 행 렌더링
+  itemTable.innerHTML = items.length ? items.map((o,i)=>`
+    <tr>
+      <td class="td-index">${i+1}.</td>
+      <td class="td-label"><input data-k="${i}" class="ipt-label" value="${escapeHtml(o.label)}" /></td>
+      <td class="td-weight"><input data-k="${i}" class="ipt-weight" type="number" min="0" step="0.1" placeholder="미입력" value="${o.weight??''}"/></td>
+      <td class="td-actions"><button class="btn btn-ghost btn-s btn-del" data-k="${i}">삭제</button></td>
+    </tr>`).join('') : `<tr><td colspan="4" style="opacity:.7;padding:12px">항목이 없습니다.</td></tr>`;
+}
+function showEditor(){ renderEditor(); show(editorWrap); }
+function hideEditor(){ hide(editorWrap); }
+
+/* 입력 */
 let composing=false;
 ipt.addEventListener('compositionstart',()=>{composing=true;});
 ipt.addEventListener('compositionend',()=>{composing=false;});
@@ -347,79 +329,56 @@ function addFromInput(){
   if(composing) return;
   let v=(ipt.value||'').replace(/\s+/g,' ').trim(); if(!v) return;
   items.push({label:v, weight:null}); ipt.value='';
-  // ▶ 입력 즉시 목록/편집란 표시
-  buildWeightEditor(); renderItemList(); show(itemListBox); show(weightEditor);
-  rebuildSegments();
+  showEditor(); rebuildSegments();
 }
 qs('btnAdd').addEventListener('click', addFromInput);
 ipt.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing){ e.preventDefault(); addFromInput(); }});
-function renderItemList(){
-  const html = items.length
-    ? items.map((o,i)=>`<div>${i+1}. ${escapeHtml(o.label)} <span style="opacity:.7">(${o.weight??'미입력'})</span></div>`).join('')
-    : '<div style="opacity:.7">항목이 없습니다.</div>';
-  itemListBox.innerHTML = html;
-}
 
-/* ===== Weight editor ===== */
-function buildWeightEditor(){
-  const tb=editTableBody; tb.innerHTML='';
-  items.forEach((o,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${escapeHtml(o.label)}</td>
-      <td><input type="number" min="0" step="0.1" class="w-input" data-i="${i}" value="${o.weight??''}" placeholder="예: 25"/></td>
-      <td><button class="btn btn-ghost btn-del" data-i="${i}">삭제</button></td>`;
-    tb.appendChild(tr);
-  });
-}
-editTableBody.addEventListener('input', e=>{
-  if(e.target.classList.contains('w-input')){
-    const i=+e.target.dataset.i; const v=e.target.value;
-    items[i].weight = (v===''? null : Number(v));
+/* 테이블 편집 이벤트 위임 */
+itemTable.addEventListener('input', e=>{
+  if(e.target.classList.contains('ipt-weight')){
+    const k=+e.target.dataset.k; const v=e.target.value;
+    items[k].weight = (v===''? null : Number(v));
+  }
+  if(e.target.classList.contains('ipt-label')){
+    const k=+e.target.dataset.k; items[k].label = e.target.value;
   }
 });
-editTableBody.addEventListener('click', e=>{
+itemTable.addEventListener('click', e=>{
   if(e.target.classList.contains('btn-del')){
-    const i=+e.target.dataset.i; items.splice(i,1); buildWeightEditor(); rebuildSegments(); renderItemList();
-    if(!items.length){ hide(weightEditor); hide(itemListBox); }
+    const k=+e.target.dataset.k; items.splice(k,1); renderEditor(); rebuildSegments();
+    if(!items.length) hideEditor();
   }
 });
-qs('btnEditWeights').addEventListener('click', ()=>{
-  if(weightEditor.classList.contains('hidden')) buildWeightEditor();
-  toggle(weightEditor);
-});
-qs('btnSave').addEventListener('click', ()=>{
-  rebuildSegments();
-  // ▶ 저장 후 자동 숨김
-  hide(weightEditor); hide(itemListBox);
-  alert('저장 완료! 룰렛에 반영했습니다.');
-});
-qs('btnClear').addEventListener('click', ()=>{ items.forEach(o=>o.weight=null); buildWeightEditor(); rebuildSegments(); renderItemList(); });
 
-/* ===== Toggles ===== */
-qs('btnToggleList').addEventListener('click', ()=>{ if(itemListBox.classList.contains('hidden')) renderItemList(); toggle(itemListBox); });
-qs('btnToggleLog').addEventListener('click', ()=>{ toggle(logBox); renderLog(); });
+/* 저장 / 전체 비중 지우기 */
+qs('btnSave').addEventListener('click', ()=>{ rebuildSegments(); hideEditor(); alert('저장 완료! 룰렛에 반영했습니다.'); });
+qs('btnClearWeight').addEventListener('click', ()=>{ items.forEach(o=>o.weight=null); renderEditor(); rebuildSegments(); });
 
-/* ===== Records ===== */
+/* 항목 보기/숨기기 토글 */
+qs('btnToggleList').addEventListener('click', ()=>{ if(editorWrap.classList.contains('hidden')) renderEditor(); toggle(editorWrap); });
+
+/* 기록 */
 function renderLog(){
   if(logBox.classList.contains('hidden')) return;
   logBox.innerHTML = historyLog.map(r=>`<div>• <b>${escapeHtml(r.v)}</b> <span style="opacity:.75">(${fmtTime(r.t)})</span></div>`).join('');
 }
+qs('btnToggleLog').addEventListener('click', ()=>{ toggle(logBox); renderLog(); });
 qs('btnClearLog').addEventListener('click', ()=>{ historyLog.length=0; renderLog(); });
 
-/* ===== Options ===== */
+/* 옵션 */
 qs('chkDupe').addEventListener('change', e=>{ allowDuplicate=e.target.checked; });
 qs('chkTheme').addEventListener('change', e=>{ document.documentElement.setAttribute('data-theme', e.target.checked ? 'light' : 'dark'); });
 
-/* ===== File I/O ===== */
+/* 파일 IO */
 qs('btnLoadFile').addEventListener('click', ()=> fileInput.click());
 fileInput.addEventListener('change', async (e)=>{
   const f=e.target.files[0]; if(!f) return;
   try{
     const text=await f.text(); const name=(f.name||'').toLowerCase();
-    let parsed=[];
-    if(name.endsWith('.csv')) parsed=parseCSV(text); else parsed=parseTXT(text);
+    let parsed=[]; if(name.endsWith('.csv')) parsed=parseCSV(text); else parsed=parseTXT(text);
     if(!parsed.length){ alert('파일에서 항목을 찾지 못했습니다.'); return; }
-    items=parsed; buildWeightEditor(); renderItemList(); show(itemListBox); show(weightEditor); rebuildSegments();
+    items=parsed; showEditor(); rebuildSegments();
   }catch(err){ alert('파일 읽기 오류'); console.error(err); }
   fileInput.value='';
 });
@@ -439,15 +398,15 @@ qs('btnDownloadSamples').addEventListener('click', ()=>{
 });
 function download(name,content,type){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url); }
 
-/* ===== Controls ===== */
-qs('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
+/* 컨트롤 */
+qs('btnReset').addEventListener('click', ()=>{ angle=0; hide(resultBadge); drawWheel(); });
 qs('btnCenterStart').addEventListener('click', spin);
 qs('btnBig').addEventListener('click', ()=>{
   const w = window.open('', '_blank', 'width=1200,height=1000');
   w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close();
 });
 
-/* ===== Big Screen (대형 화면) ===== */
+/* 대형 화면 */
 function bigHtml(theme, itemsInit, dupe, ang){
   return `<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" /><title>대형 룰렛</title>
@@ -457,12 +416,12 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font-family:
 .stage{position:relative;display:grid;place-items:center;height:100%}
 .pointer{position:absolute; top:-8px; left:50%; transform:translateX(-50%);
   width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:30px solid #ff5a5a;
-  filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)); z-index:30;}
-canvas{width:min(92vmin,1200px);height:min(92vmin,1200px)}
-.controls{position:fixed;right:16px;top:16px;display:flex;gap:8px;z-index:40}
-.btn{all:unset;background:#1a1f42d9;border:1px solid #3a47b8aa;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800}
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)); z-index:50;}
+canvas{width:min(92vmin,1200px);height:min(92vmin,1200px);z-index:10}
+.controls{position:fixed;right:16px;top:16px;display:flex;gap:8px;z-index:70}
+.btn{all:unset;background:#1a1f42d9;border:1px solid #3a47b8aa;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800;color:#fff}
 html[data-theme="light"] .btn{background:#ffffffdd;border-color:#c9d1ff;color:#1a237e}
-.result{position:fixed;left:0;right:0;bottom:18px;display:grid;place-items:center;z-index:35}
+.result{position:fixed;left:0;right:0;bottom:18px;display:grid;place-items:center;z-index:60}
 .result > div{padding:16px 22px;border-radius:16px;font-size:40px;font-weight:900;color:#fff;background:#0b1139e6;border:2px solid #3b4bd4a6;box-shadow:0 18px 32px rgba(0,0,0,.45)}
 </style></head><body>
 <div class="controls"><button class="btn" id="start">▶ 시작</button><button class="btn" id="reset">↺ 초기화</button></div>
@@ -521,14 +480,6 @@ rebuild();
 
 /* ===== Init ===== */
 rebuildSegments(); drawWheel();
-
-/* ===== Buttons ===== */
-qs('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
-qs('btnCenterStart').addEventListener('click', spin);
-qs('btnBig').addEventListener('click', ()=>{
-  const w = window.open('', '_blank', 'width=1200,height=1000');
-  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close();
-});
 </script>
 </body>
 </html>
