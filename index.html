@@ -9,9 +9,9 @@
     --bg-1:#0f1220; --bg-2:#171a2b; --panel:#1b2142cc;
     --text:#e9ecf1; --muted:#9aa3b2;
     --primary:#5865F2; --primary-2:#7c8bff;
-    --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b;
-    --ring:0 0 0 3px rgba(88,101,242,.28); --shadow:0 10px 30px rgba(0,0,0,.35); --radius:16px;
-    --chip-bg:#222a54; --chip-br:#33408a; --chip-tx:#dfe5ff;
+    --ring:0 0 0 3px rgba(88,101,242,.28);
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:16px;
     --input-bg:#0f1433; --input-br:#2f3566;
     --btn1:#2a33a8; --btn2:#1b2088; --btn-br:#4b57ff66;
     --ghost-bg:#0e1435; --ghost-br:#2d3470; --ghost-tx:#d7dcff;
@@ -21,9 +21,8 @@
     --bg-1:#f6f7fb; --bg-2:#eef1fb; --panel:#ffffffee;
     --text:#101322; --muted:#4b5570;
     --primary:#3743d9; --primary-2:#4d5cff;
-    --accent:#16a34a; --danger:#dc2626; --warn:#d97706;
-    --ring:0 0 0 3px rgba(77,92,255,.25); --shadow:0 10px 30px rgba(10,14,40,.12);
-    --chip-bg:#e8ecff; --chip-br:#c9d1ff; --chip-tx:#132055;
+    --ring:0 0 0 3px rgba(77,92,255,.25);
+    --shadow:0 10px 30px rgba(10,14,40,.12);
     --input-bg:#ffffff; --input-br:#c9cfef;
     --btn1:#4d5cff; --btn2:#3743d9; --btn-br:#4b57ff66;
     --ghost-bg:#f3f5ff; --ghost-br:#c9d1ff; --ghost-tx:#1a237e;
@@ -39,36 +38,46 @@
       radial-gradient(800px 600px at 100% 100%, #2a3a8a30, transparent 60%),
       linear-gradient(180deg,var(--bg-1),var(--bg-2));
   }
-  .wrap{display:grid;grid-template-columns:minmax(320px,1fr) 400px;gap:20px;height:100%;padding:20px}
+  .wrap{display:grid;grid-template-columns:minmax(360px,1fr) 440px;gap:20px;height:100%;padding:20px}
   .panel{background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--panel-line);border-radius:var(--radius);box-shadow:var(--shadow)}
   .left{position:relative;display:grid;grid-template-rows:auto 1fr;align-items:center;justify-items:center;padding:24px}
   .title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
   .title h1{font-size:18px;font-weight:800;margin:0;letter-spacing:.2px;opacity:.9}
-  /* ▼ 역삼각형 포인터 */
-  .pointer{position:absolute;top:78px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
-  .canvas-box{width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center}
+  /* ▼ 포인터(역삼각형) */
+  .pointer{position:absolute;top:68px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+  .canvas-box{position:relative;width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center}
   canvas{width:100%;height:100%}
+  /* 중앙 시작 버튼 */
+  .center-start{
+    position:absolute; inset:auto; width:160px; height:160px; border-radius:50%;
+    display:grid; place-items:center; font-weight:900; font-size:22px; color:#fff;
+    background: radial-gradient(circle at 35% 30%, #ffa142, #ff7a1f 60%, #e4551a 100%);
+    border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none;
+  }
+  .center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
+
   .right{display:flex;flex-direction:column;padding:18px;gap:14px}
   .section{padding:14px;border-radius:12px;background:var(--section-bg);border:1px solid var(--panel-line)}
   .section h2{font-size:14px;font-weight:800;letter-spacing:.4px;margin:0 0 10px 0;color:var(--primary-2);text-transform:uppercase}
   .input-row{display:flex;gap:10px;align-items:center}
   .input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);outline:none;transition:box-shadow .15s,border-color .15s;font-size:15px}
   .input::placeholder{color:var(--muted)} .input:focus{box-shadow:var(--ring);border-color:var(--primary-2)}
-  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;letter-spacing:.2px;font-size:14px;background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35);transition:transform .08s ease,filter .2s ease}
+  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;font-size:14px;background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35);transition:transform .08s ease,filter .2s ease}
   .btn:active{transform:translateY(1px)} .btn:hover{filter:brightness(1.05)}
   .btn-ghost{background:var(--ghost-bg);border:1px solid var(--ghost-br);box-shadow:none;color:var(--ghost-tx)}
-  .btn-success{background:linear-gradient(180deg,#22c55e,#16a34a);border-color:#34d39944}
-  .btn-warning{background:linear-gradient(180deg,var(--warn),#d97706);border-color:#fbbf2444;color:#1b1203}
+  .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)}
+  .btn-danger{background:linear-gradient(180deg,#ef4444,#dc2626)}
   .note{color:var(--muted);font-size:12px}
-  /* 결과 뱃지 */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  td{padding:6px 4px}
+  td input[type="number"]{width:90px;padding:8px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
   .result-toast{position:absolute;inset:auto 0 16px 0;display:grid;place-items:center;pointer-events:none}
   .result-badge{display:inline-block;padding:10px 14px;border-radius:999px;font-size:18px;font-weight:900;background:#11163aee;border:1px solid #33408a;box-shadow:var(--shadow)}
-  /* 항목칩은 기본 숨김 */
-  #chipWrap{display:none}
-  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--chip-bg);color:var(--chip-tx);border:1px solid var(--chip-br);padding:8px 10px;border-radius:999px;font-size:13px}
-  .chip button{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:0;line-height:1;font-weight:900}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:980px){.wrap{grid-template-columns:1fr}.pointer{top:70px}}
+  #editor{display:none}
+  .record{font-size:13px;color:var(--muted)}
+  .record b{color:#fff}
+  @media (max-width:980px){.wrap{grid-template-columns:1fr}.pointer{top:62px}}
 </style>
 </head>
 <body>
@@ -78,12 +87,18 @@
       <div class="title">
         <h1>🎡 룰렛</h1>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-success" id="btnStart">▶ 추첨 시작</button>
           <button class="btn btn-ghost" id="btnReset">↺ 초기화</button>
+          <button class="btn btn-ghost" id="btnBig">🖥 대형</button>
         </div>
       </div>
+
       <div class="pointer" aria-hidden="true"></div>
-      <div class="canvas-box"><canvas id="wheel" width="920" height="920"></canvas></div>
+
+      <div class="canvas-box">
+        <canvas id="wheel" width="920" height="920"></canvas>
+        <button id="btnCenterStart" class="center-start">시작하기</button>
+      </div>
+
       <div class="result-toast" aria-live="polite" aria-atomic="true">
         <div id="resultBadge" class="result-badge" style="display:none"></div>
       </div>
@@ -91,275 +106,430 @@
 
     <!-- RIGHT -->
     <aside class="panel right">
+      <!-- 입력/불러오기 -->
       <div class="section">
-        <h2>입력</h2>
+        <h2>입력 · 불러오기</h2>
         <div class="input-row">
           <input id="itemInput" class="input" type="text" placeholder="한 줄에 1개 입력 후 Enter" />
-          <button class="btn" id="btnAdd">+ Add</button>
+          <button class="btn" id="btnAdd">+ 추가</button>
+        </div>
+        <div class="grid-2" style="margin-top:8px">
+          <button class="btn btn-ghost" id="btnLoadFile">📁 파일 불러오기 (.txt/.csv)</button>
+          <input id="fileInput" type="file" accept=".txt,.csv" style="display:none" />
+          <button class="btn btn-ghost" id="btnDownloadSamples">⬇ 샘플 내려받기</button>
         </div>
         <div class="note" style="margin-top:6px">
-          • 칩 목록은 기본 숨김입니다.
-          <button class="btn btn-ghost" id="btnToggleList" style="padding:6px 10px;font-size:12px">항목 보기/숨기기</button>
-          <span id="countInfo"></span>
-        </div>
-        <div id="chipWrap" class="section" style="margin-top:10px">
-          <div id="chipList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          • TXT: 줄마다 항목<br/>
+          • CSV: label,weight (weight 생략 가능)
         </div>
       </div>
 
-      <div class="section stack-vert">
-        <h2>옵션</h2>
-        <div class="grid-2">
-          <button class="btn" id="btnShuffle">🔀 항목 섞기</button>
-          <button class="btn" id="btnBig">🖥 대형 룰렛</button>
-        </div>
-        <label style="display:flex;align-items:center;gap:10px;margin-top:6px"><input id="chkDupe" type="checkbox" /> 뽑기 중복 허용</label>
-        <label style="display:flex;align-items:center;gap:10px;margin-top:6px"><input id="chkTheme" type="checkbox" /> 밝은(프로젝터) 모드</label>
-      </div>
-
+      <!-- 항목/비중 편집 -->
       <div class="section">
-        <h2>화면 조정</h2>
-        <div class="grid-2">
-          <button class="btn btn-ghost" id="btnZoomIn">＋ 확대</button>
-          <button class="btn btn-ghost" id="btnZoomOut">－ 축소</button>
+        <h2>항목 보기/숨기기 & 비중 편집</h2>
+        <div class="grid-2" style="margin-bottom:8px">
+          <button class="btn" id="btnToggleEditor">👁 항목 보기/숨기기</button>
+          <button class="btn btn-ok" id="btnSave">💾 저장하기</button>
         </div>
-        <div style="margin-top:8px" class="stack-vert">
-          <button class="btn btn-warning" id="btnZoomReset">기본 설정</button>
+        <div class="note">• 비중 미입력 시 동등 배분 · 일부만 입력 시 남은 비중을 미입력자에게 균등 배분(총 100 기준)</div>
+        <div id="editor">
+          <table id="editTable"><tbody></tbody></table>
         </div>
+      </div>
+
+      <!-- 옵션 -->
+      <div class="section">
+        <h2>옵션</h2>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <input id="chkDupe" type="checkbox" checked /> 뽑기 중복 허용(체크 시 당첨 후 삭제 안 함)
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <input id="chkTheme" type="checkbox" /> 밝은(프로젝터) 모드
+        </label>
+      </div>
+
+      <!-- 기록 -->
+      <div class="section">
+        <h2>추첨 기록</h2>
+        <div class="grid-2" style="margin-bottom:8px">
+          <button class="btn btn-ghost" id="btnToggleLog">📝 기록 보기/숨기기</button>
+          <button class="btn btn-danger" id="btnClearLog">🗑 기록 삭제</button>
+        </div>
+        <div id="logBox" style="display:none;max-height:180px;overflow:auto" class="record"></div>
       </div>
     </aside>
   </div>
 
 <script>
-/* ---------- State ---------- */
-let items = [];              // 시작은 비어 있음
-let allowDuplicate = false;
-let angle = 0;               // 현재 각도(rad)
+/* ================== State ================== */
+let items = [];        // [{label, weight? number|null}]
+let segments = [];     // [{label,start,end,center,weight}]
+let allowDuplicate = true; // 기본: 삭제 안 함
+let angle = 0;         // current rotation (rad)
 let spinning = false;
 const TWO_PI = Math.PI * 2;
-const POINTER_ANGLE = -Math.PI/2; // 12시 방향
+const POINTER_ANGLE = -Math.PI/2; // pointer is at 12 o'clock
+const historyLog = [];
 
-/* DOM */
+/* ================== DOM ================== */
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 const ipt = document.getElementById('itemInput');
-const chipWrap = document.getElementById('chipWrap');
-const chipList = document.getElementById('chipList');
-const countInfo = document.getElementById('countInfo');
 const resultBadge = document.getElementById('resultBadge');
+const btnCenterStart = document.getElementById('btnCenterStart');
+const fileInput = document.getElementById('fileInput');
+const editTableBody = document.querySelector('#editTable tbody');
+const logBox = document.getElementById('logBox');
 
-/* ---------- Utils ---------- */
-const rand = (a,b)=>Math.random()*(b-a)+a;
-const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-const norm = a => (a%TWO_PI+TWO_PI)%TWO_PI;
-const escapeHtml = s => s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]));
+/* ================== Utils ================== */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const norm=a=> (a%TWO_PI + TWO_PI)%TWO_PI;
+function fmtTime(d){
+  const pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
 
-/* ---------- Wheel Drawing (with RIM) ---------- */
+/* ================== Build Segments (weights) ================== */
+function rebuildSegments(){
+  if(items.length===0){ segments=[]; drawWheel(); return; }
+
+  // 1) gather weights (percentage-ish)
+  const n = items.length;
+  let sumSpecified = 0, specifiedCount = 0, unspecifiedIdx=[];
+  const weights = new Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    const w = Number(items[i].weight);
+    if(!isNaN(w) && w>0){ weights[i]=w; sumSpecified+=w; specifiedCount++; }
+    else { unspecifiedIdx.push(i); }
+  }
+
+  // 2) distribute
+  if(specifiedCount===0){ // equal
+    for(let i=0;i<n;i++) weights[i]=100/n;
+  }else{
+    const remaining = Math.max(0, 100 - sumSpecified);
+    const share = unspecifiedIdx.length>0 ? remaining/unspecifiedIdx.length : 0;
+    for(const i of unspecifiedIdx){ weights[i]=share>0?share:0; }
+  }
+
+  // 3) normalize to 1.0
+  const sum = weights.reduce((a,b)=>a+b,0) || 1;
+  const fracs = weights.map(w => w/sum);
+
+  // 4) segments
+  segments = [];
+  let acc = 0;
+  for(let i=0;i<n;i++){
+    const start = acc*TWO_PI;
+    const end = (acc + fracs[i])*TWO_PI;
+    const center = (start+end)/2;
+    segments.push({label:items[i].label, start, end, center, weight:weights[i]});
+    acc += fracs[i];
+  }
+  drawWheel();
+  syncEditor(); // update editor numbers (clean rounding)
+}
+
+/* ================== Drawing (with realistic rim) ================== */
 function drawWheel(){
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(angle);
 
-  const n=Math.max(items.length,1);
-  const arc=TWO_PI/n;
+  // radii
+  const colorR = Math.min(W,H)/2 - 36;
+  const rimOuter = colorR + 26;
+  const rimInner = colorR + 6;
+  const innerWhite = colorR + 2;
 
-  // Radii
-  const R = Math.min(W,H)/2 - 36;     // 컬러 섹션 반지름
-  const rimOuter = R + 26;             // 검은 림 바깥
-  const rimInner = R + 6;              // 림 안쪽
-  const innerWhite = R + 2;            // 하얀 인너 링 스트로크 위치
-
-  // ---- RIM: 검은 하우징 + 그림자
+  // RIM dark housing + shadow
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,.45)';
-  ctx.shadowBlur = 18;
-  ctx.beginPath();
-  ctx.arc(0,0,rimOuter,0,TWO_PI);
-  ctx.closePath();
-  ctx.fillStyle = '#0a0c12';
-  ctx.fill();
+  ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=18;
+  ctx.beginPath(); ctx.arc(0,0,rimOuter,0,TWO_PI); ctx.fillStyle='#0a0c12'; ctx.fill();
   ctx.restore();
 
-  // 림 컷아웃(안쪽 파내기)
-  ctx.globalCompositeOperation = 'destination-out';
+  // carve inner
+  ctx.globalCompositeOperation='destination-out';
   ctx.beginPath(); ctx.arc(0,0,rimInner,0,TWO_PI); ctx.fill();
-  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation='source-over';
 
-  // 하얀 인너 링
-  ctx.beginPath();
-  ctx.arc(0,0,innerWhite,0,TWO_PI);
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 6;
-  ctx.stroke();
+  // white ring
+  ctx.beginPath(); ctx.arc(0,0,innerWhite,0,TWO_PI); ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.stroke();
 
-  // 볼트(나사) - 8개 균등 배치
-  const bolts = 8;
-  for(let i=0;i<bolts;i++){
-    const a = i*(TWO_PI/bolts);
-    const bx = Math.cos(a)*( (rimOuter+rimInner)/2 ), by = Math.sin(a)*( (rimOuter+rimInner)/2 );
-    // 바탕(흰 원)
-    ctx.beginPath(); ctx.arc(bx,by,8,0,TWO_PI); ctx.fillStyle='#e6e8ef'; ctx.fill();
-    // 속(검은 점)
-    ctx.beginPath(); ctx.arc(bx,by,3.2,0,TWO_PI); ctx.fillStyle='#1b1e2a'; ctx.fill();
+  // bolts
+  for(let i=0;i<8;i++){
+    const a=i*(TWO_PI/8); const r=(rimOuter+rimInner)/2; const x=Math.cos(a)*r, y=Math.sin(a)*r;
+    ctx.beginPath(); ctx.arc(x,y,8,0,TWO_PI); ctx.fillStyle='#e6e8ef'; ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,3.2,0,TWO_PI); ctx.fillStyle='#1b1e2a'; ctx.fill();
   }
 
-  // ---- Segments
-  for(let i=0;i<n;i++){
-    const s=i*arc, e=s+arc;
-    const hue=Math.floor((360/n)*i);
-    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,s,e); ctx.closePath();
-    ctx.fillStyle=`hsl(${hue} 75% 52%)`; ctx.fill();
+  // segments
+  if(segments.length===0){
+    // placeholder
+    ctx.beginPath(); ctx.arc(0,0,colorR,0,TWO_PI); ctx.fillStyle='#3b4a9e'; ctx.fill();
+  }else{
+    for(let i=0;i<segments.length;i++){
+      const seg=segments[i];
+      if(seg.end-seg.start<=0) continue; // zero-size skip
+      const hue = Math.floor((360/segments.length)*i);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,colorR,seg.start,seg.end); ctx.closePath();
+      ctx.fillStyle=`hsl(${hue} 75% 52%)`; ctx.fill();
 
-    // 경계
-    ctx.strokeStyle="rgba(5,10,30,.6)"; ctx.lineWidth=6;
-    ctx.beginPath(); ctx.arc(0,0,R,s,e); ctx.stroke();
+      ctx.strokeStyle="rgba(5,10,30,.6)"; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.arc(0,0,colorR,seg.start,seg.end); ctx.stroke();
 
-    // 라벨
-    ctx.save(); ctx.rotate(s+arc/2);
-    const r = R*0.72;
-    ctx.fillStyle="rgba(4,7,22,.35)";
-    roundedRect(ctx, r-84, -22, 168, 44, 12); ctx.fill();
-    ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.font="700 28px ui-sans-serif,system-ui,'Noto Sans KR'";
-    ctx.fillText(items[i]??"", r, 0);
-    ctx.restore();
+      // label
+      ctx.save(); ctx.rotate(seg.center);
+      const r = colorR*0.72;
+      // badge
+      ctx.fillStyle="rgba(4,7,22,.35)";
+      roundedRect(ctx, r-92, -22, 184, 44, 12); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.font="700 28px ui-sans-serif,system-ui,'Noto Sans KR'";
+      ctx.fillText(seg.label, r, 0);
+      ctx.restore();
+    }
   }
 
-  // 허브(센터 캡)
+  // hub
   ctx.beginPath(); ctx.arc(0,0,80,0,TWO_PI);
-  const g = ctx.createRadialGradient(0,0,10,0,0,80);
-  g.addColorStop(0,"#ff8a3d"); g.addColorStop(1,"#e4551a");
-  ctx.fillStyle = g; ctx.fill();
-  // 허브 하이라이트 링
+  const g=ctx.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a');
+  ctx.fillStyle=g; ctx.fill();
   ctx.beginPath(); ctx.arc(0,0,90,0,TWO_PI); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=10; ctx.stroke();
 
   ctx.restore();
 }
 function roundedRect(ctx,x,y,w,h,r){
-  ctx.beginPath(); ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
 }
 
-/* ---------- Spin (exact stop, smooth decay) ---------- */
-function targetAngleForIndex(index){
-  const n=items.length; const arc=TWO_PI/n;
-  const centerAtPointer = (index+0.5)*arc;
-  const base = POINTER_ANGLE - centerAtPointer;
-  const delta = ((base - angle) % TWO_PI + TWO_PI) % TWO_PI;
-  const turns = Math.floor(rand(6,8)); // 6~7바퀴
+/* ================== Spin with exact stop ================== */
+function pickIndexWeighted(){
+  // choose by actual weights used in segments
+  if(segments.length===0) return -1;
+  const total = segments.reduce((a,s)=>a+(s.end-s.start),0);
+  const x = Math.random()*total;
+  let run=0;
+  for(let i=0;i<segments.length;i++){
+    const len = segments[i].end-segments[i].start;
+    if(x < run+len) return i;
+    run += len;
+  }
+  return segments.length-1;
+}
+function targetAngleForIndex(i){
+  const center = segments[i].center;        // wheel-local center angle
+  const desired = POINTER_ANGLE - center;   // where angle should be so that pointer hits center
+  const delta = norm(desired - angle);      // positive rotation to reach it
+  const turns = Math.floor(Math.random()*2)+6; // 6~7 turns
   return angle + turns*TWO_PI + delta;
 }
 function spin(){
-  if(spinning || items.length===0) return;
-  hideResult(); spinning = true;
+  if(spinning || segments.length===0) return;
+  hideResult(); spinning = true; btnCenterStart.disabled = true;
 
-  const winIdx = Math.floor(rand(0, items.length));     // 1) 미리 당첨 선택
-  const target = targetAngleForIndex(winIdx);           // 2) 해당 중앙 각도로 목표 설정
+  const idx = pickIndexWeighted();
+  const target = targetAngleForIndex(idx);
   const start = angle;
-  const duration = rand(3600, 5200);                    // 3) 감속 지속시간
+  const duration = 3600 + Math.random()*1400; // 3.6~5.0s
   const t0 = performance.now();
 
   (function anim(now){
     const t = clamp((now - t0)/duration, 0, 1);
-    const ease = 1 - Math.pow(1 - t, 3);                // easeOutCubic
-    angle = start + (target - start) * ease;
+    const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    angle = start + (target - start)*ease;
     drawWheel();
-    if (t < 1) requestAnimationFrame(anim);
+    if(t<1) requestAnimationFrame(anim);
     else {
-      angle = target; drawWheel();                      // 수치오차 보정
-      showResult(winIdx);
-      spinning = false;
+      angle = target; drawWheel(); // numeric fix
+      onWin(idx);
+      spinning = false; btnCenterStart.disabled = false;
     }
   })(t0);
 }
 
-/* ---------- Result ---------- */
-function showResult(index){
-  const pick = items[index];
+/* ensure UI and pointer agree */
+function getIndexAtPointer(){
+  if(segments.length===0) return -1;
+  const wheelAtPointer = norm(POINTER_ANGLE - angle); // wheel-local angle
+  for(let i=0;i<segments.length;i++){
+    const {start,end} = segments[i];
+    if(start <= wheelAtPointer && wheelAtPointer < end) return i;
+    // edge case when pointer exactly at end (due to rounding)
+    if(i===segments.length-1 && Math.abs(wheelAtPointer - end) < 1e-6) return i;
+  }
+  return -1;
+}
+
+/* ================== Result / Log ================== */
+function onWin(idx){
+  const seg = segments[idx];
+  // Double-check (safety): if mismatch, trust pointer
+  const ptrIdx = getIndexAtPointer();
+  const finalIdx = (ptrIdx>=0 ? ptrIdx : idx);
+  const pick = segments[finalIdx].label;
+
   resultBadge.textContent = `🎉 당첨: ${pick}`;
   resultBadge.style.display = 'inline-block';
+
+  // 기록 추가
+  historyLog.unshift({t:new Date(), v:pick});
+  renderLog();
+
+  // 삭제 옵션: 중복 허용 체크가 해제된 경우에만 삭제
   if(!allowDuplicate){
-    items.splice(index,1);
-    refreshCount(); renderChips(); drawWheel();
+    // remove from items by label (first match)
+    const k = items.findIndex(o => o.label === pick);
+    if(k>=0){ items.splice(k,1); rebuildSegments(); syncEditor(); }
   }
 }
 function hideResult(){ resultBadge.style.display='none' }
+function renderLog(){
+  if(logBox.style.display==='none') return;
+  logBox.innerHTML = historyLog.slice(0,200).map(r=>`<div>• <b>${r.v}</b> <span style="opacity:.75">(${fmtTime(r.t)})</span></div>`).join('');
+}
 
-/* ---------- Input (IME 안전 + 안들어가는 문제 해결) ---------- */
+/* ================== Input / Editor ================== */
 let composing=false, lastAdded='', lastAt=0;
-ipt.addEventListener('compositionstart',()=>{ composing=true; });
-ipt.addEventListener('compositionend',()=>{ composing=false; }); // 조합 종료 후 Enter로만 추가
+ipt.addEventListener('compositionstart',()=>{composing=true;});
+ipt.addEventListener('compositionend',()=>{composing=false;});
 function sanitize(raw){
   let v=(raw||'').replace(/\s+/g,' ').trim().replace(/[,\u3001;\/\\]+$/,'').trim();
-  if(v==='등') return '';  // 흔한 오입력 방지
-  return v;
+  if(v==='등') return ''; return v;
+}
+function addItem(label){
+  items.push({label, weight:null});
+  ipt.value=''; syncEditor(); rebuildSegments();
 }
 function addFromInput(){
-  // 일부 환경에서 Enter가 keydown/keyup 2번 들어오는 이슈 → 디바운스 최소화
   if(composing) return;
   const v = sanitize(ipt.value);
   if(!v) return;
-  const now = Date.now();
-  if(v===lastAdded && (now-lastAt)<300) return;
-  items.push(v);
+  const now=Date.now(); if(v===lastAdded && now-lastAt<300) return;
   lastAdded=v; lastAt=now;
-  ipt.value='';
-  refreshCount(); renderChips(); drawWheel();
+  addItem(v);
 }
-ipt.addEventListener('keydown', e=>{
-  if(e.key==='Enter'){
-    if(e.isComposing) return;   // 조합 중 Enter는 무시
-    e.preventDefault();
-    addFromInput();
-  }
-});
 document.getElementById('btnAdd').addEventListener('click', addFromInput);
-
-/* ---------- Chips (기본 숨김, 보기 토글) ---------- */
-document.getElementById('btnToggleList').addEventListener('click', ()=>{
-  chipWrap.style.display = chipWrap.style.display==='none' ? '' : 'none';
+ipt.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.isComposing){ e.preventDefault(); addFromInput(); }
 });
-function renderChips(){
-  chipList.innerHTML='';
-  items.forEach((v,i)=>{
-    const el=document.createElement('span');
-    el.className='chip';
-    el.innerHTML=`<span>${escapeHtml(v)}</span> <button data-i="${i}">✕</button>`;
-    chipList.appendChild(el);
+
+document.getElementById('btnToggleEditor').addEventListener('click', ()=>{
+  const ed = document.getElementById('editor');
+  ed.style.display = ed.style.display==='none' ? '' : 'none';
+  // 요구사항 1: 항목보기/숨기기 기능 확인 (동작 보장)
+});
+
+function syncEditor(){
+  const tbody = editTableBody; tbody.innerHTML='';
+  items.forEach((it,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="width:56%"><input data-i="${i}" class="edit-label input" value="${escapeHtml(it.label)}" /></td>
+      <td style="width:24%"><input data-i="${i}" class="edit-weight" type="number" min="0" step="0.1" placeholder="비중" value="${it.weight??''}"/></td>
+      <td style="width:20%"><button class="btn btn-ghost btn-del" data-i="${i}">삭제</button></td>
+    `;
+    tbody.appendChild(tr);
   });
 }
-chipList.addEventListener('click', e=>{
-  if(e.target.tagName==='BUTTON'){
-    const i=+e.target.dataset.i;
-    items.splice(i,1);
-    refreshCount(); renderChips(); drawWheel();
+editTableBody.addEventListener('input', (e)=>{
+  if(e.target.classList.contains('edit-label')){
+    const i=+e.target.dataset.i; items[i].label = e.target.value;
+  }else if(e.target.classList.contains('edit-weight')){
+    const i=+e.target.dataset.i; const v=e.target.value;
+    items[i].weight = (v===''? null : Number(v));
   }
 });
-function refreshCount(){ countInfo.textContent = ` (항목: ${items.length}개)`; }
+editTableBody.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('btn-del')){
+    const i=+e.target.dataset.i; items.splice(i,1); syncEditor(); rebuildSegments();
+  }
+});
+document.getElementById('btnSave').addEventListener('click', ()=>{
+  rebuildSegments(); // 저장 후 룰렛 반영
+  alert('저장되었습니다. 룰렛에 반영했어요.');
+});
 
-/* ---------- Options ---------- */
-document.getElementById('chkDupe').addEventListener('change', e=>{ allowDuplicate=e.target.checked; });
+/* ================== File Load / Samples ================== */
+document.getElementById('btnLoadFile').addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', async (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const text = await f.text();
+  const name = (f.name||'').toLowerCase();
+  let parsed = [];
+  if(name.endsWith('.csv')) parsed = parseCSV(text);
+  else parsed = parseTXT(text);
+  if(parsed.length===0){ alert('읽은 항목이 없습니다. 파일 내용을 확인하세요.'); return; }
+  items = parsed;
+  syncEditor(); rebuildSegments();
+  fileInput.value='';
+});
+function parseTXT(s){
+  const lines = s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+  return lines.map(v=>({label:v, weight:null}));
+}
+function parseCSV(s){
+  const lines = s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+  const out=[];
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i];
+    if(i===0 && /label/i.test(line) && /weight|비중/i.test(line)) continue; // header skip
+    const [a,b] = line.split(',').map(x=>x?.trim());
+    if(!a) continue;
+    const w = (b===''||b==null) ? null : Number(b);
+    out.push({label:a, weight: isNaN(w)? null : w});
+  }
+  return out;
+}
+document.getElementById('btnDownloadSamples').addEventListener('click', ()=>{
+  const txt = `사과\n바나나\n체리\n포도`;
+  const csv = `label,weight\n사과,40\n바나나,\n체리,30\n포도,`;
+  downloadBlob('sample.txt', txt, 'text/plain;charset=utf-8');
+  downloadBlob('sample.csv', csv, 'text/csv;charset=utf-8');
+});
+function downloadBlob(filename, content, type){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ================== Options / Records ================== */
+document.getElementById('chkDupe').addEventListener('change', e=>{
+  allowDuplicate = e.target.checked; // 체크 시 삭제 안 함
+});
 document.getElementById('chkTheme').addEventListener('change', e=>{
   document.documentElement.setAttribute('data-theme', e.target.checked ? 'light' : 'dark');
 });
-document.getElementById('btnShuffle').addEventListener('click', ()=>{ items.sort(()=>Math.random()-0.5); renderChips(); drawWheel(); });
-document.getElementById('btnStart').addEventListener('click', ()=>spin());
-document.getElementById('btnReset').addEventListener('click', ()=>{ angle=0; drawWheel(); hideResult(); });
+document.getElementById('btnToggleLog').addEventListener('click', ()=>{
+  logBox.style.display = logBox.style.display==='none' ? '' : 'none';
+  renderLog();
+});
+document.getElementById('btnClearLog').addEventListener('click', ()=>{
+  historyLog.length=0; renderLog();
+});
 
-let zoom=1;
-document.getElementById('btnZoomIn').addEventListener('click', ()=>{ zoom = clamp(zoom+0.1,.6,1.6); const left=document.querySelector('.left'); left.style.transformOrigin='top left'; left.style.transform=`scale(${zoom})`; });
-document.getElementById('btnZoomOut').addEventListener('click', ()=>{ zoom = clamp(zoom-0.1,.6,1.6); const left=document.querySelector('.left'); left.style.transformOrigin='top left'; left.style.transform=`scale(${zoom})`; });
-document.getElementById('btnZoomReset').addEventListener('click', ()=>{ zoom=1; document.querySelector('.left').style.transform='none'; });
-
-/* ---------- Big Screen ---------- */
+/* ================== Controls ================== */
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  angle=0; hideResult(); drawWheel();
+});
 document.getElementById('btnBig').addEventListener('click', ()=>{
   const w = window.open('', '_blank', 'width=1200,height=1000');
   w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle));
   w.document.close();
 });
+document.getElementById('btnCenterStart').addEventListener('click', spin);
+
+/* ================== Big Screen ================== */
 function bigHtml(theme, itemsInit, dupe, ang){
-  return `<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
+  // build a minimal page that rebuilds segments with the same rules
+  return `
+<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" /><title>대형 룰렛</title>
 <style>
 :root{--bg:#0a0d1f;--tx:#fff} html[data-theme="light"]{--bg:#f6f7fb;--tx:#101322}
@@ -372,77 +542,66 @@ canvas{width:min(92vmin,1200px);height:min(92vmin,1200px)}
 html[data-theme="light"] .btn{background:#ffffffdd;border-color:#c9d1ff;color:#1a237e}
 </style></head><body>
 <div class="controls"><button class="btn" id="start">▶ 시작</button><button class="btn" id="reset">↺ 초기화</button></div>
-<div class="stage"><div class="pointer"></div><canvas id="C" width="1400" height="1400"></canvas><div id="R" style="font-size:28px;font-weight:900"></div></div>
+<div class="stage"><div class="pointer"></div><canvas id="C" width="1400" height="1400"></canvas></div>
 <script>
 const TWO_PI=Math.PI*2, POINTER_ANGLE=-Math.PI/2;
 const C=document.getElementById('C'), X=C.getContext('2d');
-let items=${JSON.stringify(itemsInit)}, allow=${dupe?'true':'false'}, angle=${ang||0}, spinning=false;
-function drawRim(R){
-  const rimOuter=R+26, rimInner=R+6, innerWhite=R+2;
-  X.save();
-  X.shadowColor='rgba(0,0,0,.45)'; X.shadowBlur=18;
-  X.beginPath(); X.arc(0,0,rimOuter,0,TWO_PI); X.fillStyle='#0a0c12'; X.fill(); X.restore();
-  X.globalCompositeOperation='destination-out'; X.beginPath(); X.arc(0,0,rimInner,0,TWO_PI); X.fill(); X.globalCompositeOperation='source-over';
-  X.beginPath(); X.arc(0,0,innerWhite,0,TWO_PI); X.strokeStyle='#fff'; X.lineWidth=6; X.stroke();
-  for(let i=0;i<8;i++){ const a=i*(TWO_PI/8); const bx=Math.cos(a)*((rimOuter+rimInner)/2), by=Math.sin(a)*((rimOuter+rimInner)/2);
-    X.beginPath(); X.arc(bx,by,8,0,TWO_PI); X.fillStyle='#e6e8ef'; X.fill();
-    X.beginPath(); X.arc(bx,by,3.2,0,TWO_PI); X.fillStyle='#1b1e2a'; X.fill();
-  }
+let items=${JSON.stringify(itemsInit)}, allow=${dupe?'true':'false'}, angle=${ang||0}, spinning=false, seg=[];
+function rebuild(){
+  if(items.length===0){seg=[]; draw(); return;}
+  let sum=0, uns=[]; const w=new Array(items.length).fill(0);
+  for(let i=0;i<items.length;i++){ const x=Number(items[i].weight); if(x>0){w[i]=x; sum+=x;} else uns.push(i); }
+  if(sum===0){ for(let i=0;i<items.length;i++) w[i]=100/items.length; }
+  else{ const rem=Math.max(0,100-sum); const share=uns.length? rem/uns.length : 0; for(const i of uns) w[i]=share; }
+  const s=w.reduce((a,b)=>a+b,0)||1; const f=w.map(v=>v/s);
+  seg=[]; let a=0; for(let i=0;i<items.length;i++){ const st=a*TWO_PI, en=(a+f[i])*TWO_PI; seg.push({label:items[i].label,start:st,end:en,center:(st+en)/2}); a+=f[i]; }
+  draw();
 }
 function draw(){
   const W=C.width,H=C.height; X.clearRect(0,0,W,H); X.save(); X.translate(W/2,H/2); X.rotate(angle);
-  const n=Math.max(items.length,1), arc=TWO_PI/n, R=Math.min(W,H)/2-36;
-  drawRim(R);
-  for(let i=0;i<n;i++){
-    const s=i*arc,e=s+arc,hue=Math.floor((360/n)*i);
-    X.beginPath(); X.moveTo(0,0); X.arc(0,0,R,s,e); X.closePath(); X.fillStyle=\`hsl(\${hue} 75% 52%)\`; X.fill();
-    X.strokeStyle='rgba(5,10,30,.55)'; X.lineWidth=6; X.beginPath(); X.arc(0,0,R,s,e); X.stroke();
-    X.save(); X.rotate(s+arc/2); const r=R*0.72;
-    X.fillStyle='rgba(4,7,22,.35)'; X.fillRect(r-90,-22,180,44);
-    X.fillStyle='#fff'; X.font="700 42px ui-sans-serif,'Noto Sans KR'"; X.textAlign='center'; X.textBaseline='middle'; X.fillText(items[i]??'', r, 0);
-    X.restore();
+  const R=Math.min(W,H)/2-36, rimO=R+26, rimI=R+6, innerW=R+2;
+  // rim
+  X.save(); X.shadowColor='rgba(0,0,0,.45)'; X.shadowBlur=18; X.beginPath(); X.arc(0,0,rimO,0,TWO_PI); X.fillStyle='#0a0c12'; X.fill(); X.restore();
+  X.globalCompositeOperation='destination-out'; X.beginPath(); X.arc(0,0,rimI,0,TWO_PI); X.fill(); X.globalCompositeOperation='source-over';
+  X.beginPath(); X.arc(0,0,innerW,0,TWO_PI); X.strokeStyle='#fff'; X.lineWidth=6; X.stroke();
+  for(let i=0;i<8;i++){ const a=i*(TWO_PI/8), r=(rimO+rimI)/2, x=Math.cos(a)*r, y=Math.sin(a)*r;
+    X.beginPath(); X.arc(x,y,8,0,TWO_PI); X.fillStyle='#e6e8ef'; X.fill();
+    X.beginPath(); X.arc(x,y,3.2,0,TWO_PI); X.fillStyle='#1b1e2a'; X.fill();
   }
+  if(seg.length){
+    for(let i=0;i<seg.length;i++){
+      const s=seg[i]; const hue=Math.floor((360/seg.length)*i);
+      X.beginPath(); X.moveTo(0,0); X.arc(0,0,R,s.start,s.end); X.closePath(); X.fillStyle=\`hsl(\${hue} 75% 52%)\`; X.fill();
+      X.strokeStyle='rgba(5,10,30,.55)'; X.lineWidth=6; X.beginPath(); X.arc(0,0,R,s.start,s.end); X.stroke();
+      X.save(); X.rotate(s.center); X.fillStyle='#fff'; X.font="700 42px ui-sans-serif,'Noto Sans KR'";
+      X.textAlign='center'; X.textBaseline='middle'; X.fillText(s.label, R*0.72, 0); X.restore();
+    }
+  }else{ X.beginPath(); X.arc(0,0,R,0,TWO_PI); X.fillStyle='#3b4a9e'; X.fill(); }
+  // hub
   X.beginPath(); X.arc(0,0,80,0,TWO_PI);
   const g=X.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a');
   X.fillStyle=g; X.fill(); X.beginPath(); X.arc(0,0,90,0,TWO_PI); X.strokeStyle='rgba(255,255,255,.9)'; X.lineWidth=10; X.stroke();
   X.restore();
 }
-function targetAngleForIndex(i){ const n=items.length, arc=TWO_PI/n; const base=POINTER_ANGLE - (i+0.5)*arc; const delta=((base-angle)%TWO_PI+TWO_PI)%TWO_PI; const turns=6; return angle + turns*TWO_PI + delta; }
-function spin(){ if(spinning||items.length===0) return; spinning=true; const idx=Math.floor(Math.random()*items.length); const target=targetAngleForIndex(idx);
-  const start=angle, dur=3800+Math.random()*1200, t0=performance.now();
-  (function anim(now){ const t=Math.min((now-t0)/dur,1); const ease=1-Math.pow(1-t,3); angle=start+(target-start)*ease; draw(); if(t<1) requestAnimationFrame(anim);
-    else { angle=target; draw(); document.getElementById('R').textContent='🎉 '+items[idx]+' 🎉'; if(!allow){ items.splice(idx,1); draw(); } spinning=false; } })(t0);
-}
-document.getElementById('start').onclick=spin; document.getElementById('reset').onclick=()=>{ angle=0; draw(); document.getElementById('R').textContent=''; };
-draw();
+function target(i){ const d=POINTER_ANGLE - seg[i].center; const delta=((d-angle)%TWO_PI+TWO_PI)%TWO_PI; return angle + 6*TWO_PI + delta; }
+function pick(){ const tot=seg.reduce((a,s)=>a+(s.end-s.start),0); const x=Math.random()*tot; let r=0; for(let i=0;i<seg.length;i++){const len=seg[i].end-seg[i].start; if(x<r+len) return i; r+=len;} return seg.length-1; }
+function spin(){ if(spinning||seg.length===0) return; spinning=true; const i=pick(); const tgt=target(i); const st=angle, dur=3800+Math.random()*1200, t0=performance.now();
+ (function anim(now){ const t=Math.min((now-t0)/dur,1); const ease=1-Math.pow(1-t,3); angle=st+(tgt-st)*ease; draw(); if(t<1) requestAnimationFrame(anim); else { angle=tgt; draw(); if(!allow){ const k=items.findIndex(o=>o.label===seg[i].label); if(k>=0) items.splice(k,1); rebuild(); } spinning=false; } })(t0); }
+document.getElementById('start').onclick=spin; document.getElementById('reset').onclick=()=>{angle=0; draw();};
+rebuild();
 <\/script></body></html>`;
 }
 
-/* ---------- Init ---------- */
-function renderChips(){
-  chipList.innerHTML='';
-  items.forEach((v,i)=>{
-    const el=document.createElement('span'); el.className='chip';
-    el.innerHTML=`<span>${escapeHtml(v)}</span> <button data-i="${i}">✕</button>`;
-    chipList.appendChild(el);
-  });
-}
-function refreshCount(){ countInfo.textContent = ` (항목: ${items.length}개)`; }
-chipList.addEventListener('click', e=>{
-  if(e.target.tagName==='BUTTON'){ const i=+e.target.dataset.i; items.splice(i,1); refreshCount(); renderChips(); drawWheel(); }
-});
-document.getElementById('btnShuffle').addEventListener('click',()=>{ items.sort(()=>Math.random()-0.5); renderChips(); drawWheel(); });
-document.getElementById('btnStart').addEventListener('click',()=>spin());
-document.getElementById('btnReset').addEventListener('click',()=>{ angle=0; drawWheel(); hideResult(); });
-document.getElementById('btnZoomIn').addEventListener('click',()=>{ const left=document.querySelector('.left'); window._z=(window._z||1)+.1; left.style.transformOrigin='top left'; left.style.transform=`scale(${clamp(window._z,.6,1.6)})`; });
-document.getElementById('btnZoomOut').addEventListener('click',()=>{ const left=document.querySelector('.left'); window._z=(window._z||1)-.1; left.style.transformOrigin='top left'; left.style.transform=`scale(${clamp(window._z,.6,1.6)})`; });
-document.getElementById('btnZoomReset').addEventListener('click',()=>{ const left=document.querySelector('.left'); window._z=1; left.style.transform='none'; });
+/* ================== Helpers ================== */
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]); }
 
-/* 입력 바인딩 */
-document.getElementById('btnAdd').addEventListener('click', addFromInput);
+/* ================== Init ================== */
+rebuildSegments(); // start empty
+drawWheel();
 
-/* 시작 */
-refreshCount(); renderChips(); drawWheel();
+/* ================== Events ================== */
+document.getElementById('btnToggleLog').addEventListener('click', renderLog);
+document.getElementById('btnCenterStart').addEventListener('click', spin);
 </script>
 </body>
 </html>
