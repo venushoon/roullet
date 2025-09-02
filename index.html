@@ -62,7 +62,9 @@
   .input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);outline:none;transition:box-shadow .15s,border-color .15s;font-size:15px}
   .input::placeholder{color:var(--muted)} .input:focus{box-shadow:var(--ring);border-color:#7c8bff}
 
-  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;font-size:14px;background:var(--ghost-bg);border:1px solid var(--ghost-br);transition:transform .08s ease,filter .2s ease}
+  /* 고스트 버튼(통일) */
+  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;
+       color:#fff;font-weight:800;font-size:14px;background:var(--ghost-bg);border:1px solid var(--ghost-br);transition:transform .08s,filter .2s}
   .btn:active{transform:translateY(1px)} .btn:hover{filter:brightness(1.05)}
   .btn-primary{background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35)}
   .btn-s{padding:8px 10px;font-size:12.5px;border-radius:10px}
@@ -136,11 +138,12 @@
           </table>
         </div>
 
+        <!-- 기록 섹션: 동일 고스트 스타일 -->
         <div class="section" style="margin-top:12px">
           <h2>추첨 기록</h2>
           <div style="display:flex;gap:10px;margin-bottom:8px">
-            <button class="btn btn-s" id="btnToggleLog">📝 기록 보기/숨기기</button>
-            <button class="btn btn-s" id="btnClearLog">🗑 삭제</button>
+            <button class="btn" id="btnToggleLog">📝 기록 보기/숨기기</button>
+            <button class="btn" id="btnClearLog">🗑 삭제</button>
           </div>
           <div id="logBox" class="hidden" style="max-height:180px;overflow:auto;font-size:13px;opacity:.9"></div>
         </div>
@@ -177,7 +180,7 @@ const ipt=qs('itemInput'); const resultBadge=qs('resultBadge');
 const editorWrap=qs('editorWrap'); const itemTable=qs('itemTable');
 const logBox=qs('logBox'); const fileInput=qs('fileInput');
 
-/* ===== Build segments ===== */
+/* ===== Build segments (weights) ===== */
 function rebuildSegments(){
   if(items.length===0){ segments=[]; drawWheel(); return; }
   const n=items.length, weights=new Array(n).fill(0), unspecified=[];
@@ -298,31 +301,62 @@ function renderEditor(){
       </td>
     </tr>`).join('') : `<tr><td colspan="4" style="opacity:.7;padding:10px">항목이 없습니다.</td></tr>`;
 }
+/* 저장 전에 DOM → 상태 강제 동기화 */
+function syncEditorToState(){
+  document.querySelectorAll('.ipt-label').forEach(el=>{
+    const k=+el.dataset.k; if(items[k]) items[k].label = el.value;
+  });
+  document.querySelectorAll('.ipt-weight').forEach(el=>{
+    const k=+el.dataset.k; if(items[k]) items[k].weight = (el.value===''? null : Number(el.value));
+  });
+}
 function showEditor(){ renderEditor(); show(editorWrap); }
 function hideEditor(){ hide(editorWrap); }
 
-/* ===== Input: Enter 고장 방지(IME 대응) ===== */
+/* 입력(Enter 고장 방지) */
 let composing=false;
 ipt.addEventListener('compositionstart',()=>{composing=true;});
 ipt.addEventListener('compositionend',()=>{composing=false;});
 function addFromInput(){
   if(composing) return;
   let v=(ipt.value||'').replace(/\s+/g,' ').trim(); if(!v) return;
-  items.push({label:v, weight:null}); ipt.value='';
-  showEditor(); rebuildSegments();
+  items.push({label:v, weight:null}); ipt.value=''; showEditor(); rebuildSegments();
 }
 qs('btnAdd').addEventListener('click', addFromInput);
 function onEnter(e){
   if(e.key!=='Enter') return;
-  if(e.isComposing || composing) return; // IME 조합 중이면 무시
-  e.preventDefault(); e.stopPropagation();
-  addFromInput();
+  if(e.isComposing || composing) return;
+  e.preventDefault(); e.stopPropagation(); addFromInput();
 }
 ipt.addEventListener('keydown', onEnter);
-ipt.addEventListener('keyup', onEnter); // 일부 브라우저 보완
+ipt.addEventListener('keyup', onEnter);
+
+/* 편집 이벤트: input/change/blur 모두 수집 */
+function onEdit(e){
+  const t=e.target;
+  if(t.classList.contains('ipt-weight')){
+    const k=+t.dataset.k; items[k].weight = (t.value===''? null : Number(t.value));
+  }
+  if(t.classList.contains('ipt-label')){
+    const k=+t.dataset.k; items[k].label = t.value;
+  }
+}
+itemTable.addEventListener('input', onEdit);
+itemTable.addEventListener('change', onEdit);
+itemTable.addEventListener('blur', onEdit, true);
+
+itemTable.addEventListener('click', e=>{
+  const delBtn = e.target.closest('.btn-del');
+  if(delBtn){ const k=+delBtn.dataset.k; items.splice(k,1); renderEditor(); rebuildSegments(); if(!items.length) hideEditor(); }
+});
 
 /* 저장 / 전체 비중 지우기 (에디터 내부) */
-qs('btnSave').addEventListener('click', ()=>{ rebuildSegments(); hideEditor(); alert('저장 완료! 룰렛에 반영했습니다.'); });
+qs('btnSave').addEventListener('click', ()=>{
+  syncEditorToState();          // ★ 최신 입력값 강제 반영
+  rebuildSegments();            // 룰렛 갱신
+  hideEditor();                 // 자동 숨김
+  alert('저장 완료! 룰렛에 비중을 반영했습니다.');
+});
 qs('btnClearWeight').addEventListener('click', ()=>{ items.forEach(o=>o.weight=null); renderEditor(); rebuildSegments(); });
 
 /* 항목 보기/숨기기 */
@@ -376,7 +410,7 @@ qs('btnBig').addEventListener('click', ()=>{
   w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close();
 });
 
-/* 대형 화면(동작 동일) */
+/* 대형 화면 */
 function bigHtml(theme, itemsInit, dupe, ang){
   return `<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" /><title>대형 룰렛</title>
