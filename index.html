@@ -24,7 +24,6 @@
     --ring:0 0 0 3px rgba(77,92,255,.25);
     --shadow:0 10px 30px rgba(10,14,40,.12);
     --input-bg:#ffffff; --input-br:#c9cfef;
-    --btn1:#4d5cff; --btn2:#3743d9; --btn-br:#4b57ff66;
     --ghost-bg:#f3f5ff; --ghost-br:#c9d1ff; --ghost-tx:#1a237e;
     --panel-line:#e2e7ff; --section-bg:#f7f8ff;
   }
@@ -46,11 +45,11 @@
   .title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
   .title h1{font-size:18px;font-weight:800;margin:0;letter-spacing:.2px;opacity:.9}
 
-  /* 캔버스 박스(포인터/결과/버튼 모두 이 안에서 z-index 관리) */
+  /* 캔버스 박스 */
   .canvas-box{position:relative;width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center}
   canvas{width:100%;height:100%;z-index:10}
 
-  /* 포인터(역삼각형) — 컨테이너 기준으로 상단 중앙 고정 */
+  /* 포인터(역삼각형) — 컨테이너 기준 고정 */
   .pointer{
     position:absolute; top:-6px; left:50%; transform:translateX(-50%);
     width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;
@@ -66,7 +65,7 @@
   }
   .center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
 
-  /* 결과: 하단 중앙(시작 버튼 미가림) — 항상 맨 위 */
+  /* 결과: 하단 중앙 — 항상 최상단 */
   .result-overlay{
     position:absolute; left:0; right:0; bottom:10px; display:grid; place-items:center; pointer-events:none; z-index:60;
   }
@@ -83,23 +82,29 @@
   .input-row{display:flex;gap:10px;align-items:center}
   .input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);outline:none;transition:box-shadow .15s,border-color .15s;font-size:15px}
   .input::placeholder{color:var(--muted)} .input:focus{box-shadow:var(--ring);border-color:var(--primary-2)}
-  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;font-size:14px;background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35);transition:transform .08s ease,filter .2s ease}
+
+  /* 버튼 */
+  .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;color:#fff;font-weight:800;font-size:14px;background:var(--ghost-bg);border:1px solid var(--ghost-br);box-shadow:none;transition:transform .08s ease,filter .2s ease}
   .btn:active{transform:translateY(1px)} .btn:hover{filter:brightness(1.05)}
-  .btn-ghost{background:var(--ghost-bg);border:1px solid var(--ghost-br);box-shadow:none;color:var(--ghost-tx)}
-  .btn-s{padding:8px 10px;font-size:12.5px;border-radius:10px;box-shadow:none}
-  .btn-ok{background:linear-gradient(180deg,#22c55e,#16a34a)}
-  .btn-danger{background:linear-gradient(180deg,#ef4444,#dc2626)}
+  .btn-primary{background:linear-gradient(180deg,var(--btn1),var(--btn2));border:1px solid var(--btn-br);box-shadow:0 10px 20px rgba(37,48,140,.35)}
+  .btn-s{padding:8px 10px;font-size:12.5px;border-radius:10px}
+
   .note{color:var(--muted);font-size:12px}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  table{width:100%;border-collapse:separate;border-spacing:0 6px}
-  th,td{padding:8px 6px;font-size:14px}
-  th{color:var(--muted);font-weight:700}
-  .table{border:1px solid var(--panel-line);border-radius:12px;padding:10px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
-  .td-index{width:40px;color:var(--muted);text-align:right;padding-right:10px}
-  .td-label input{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
-  .td-weight input{width:90px;padding:9px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);text-align:right}
-  .td-actions{width:82px;text-align:right}
 
+  /* 항목 편집 테이블 */
+  .table{border:1px solid var(--panel-line);border-radius:12px;padding:10px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
+  table{width:100%;border-collapse:separate;border-spacing:0 4px}
+  th,td{padding:6px 6px;font-size:14px}
+  th{color:var(--muted);font-weight:700}
+  .td-index{width:34px;color:var(--muted);text-align:right;padding-right:8px}
+  .td-label input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
+  .td-weight input{width:80px;padding:8px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text);text-align:right}
+  .td-actions{width:46px;text-align:right}
+  .icon-btn{all:unset;display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--ghost-br);background:var(--ghost-bg);cursor:pointer}
+  .icon-btn:hover{filter:brightness(1.05)}
+
+  .toolbar{display:flex;gap:8px;justify-content:flex-end;margin:-2px 0 8px}
   .hidden{display:none !important}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
 </style>
@@ -111,8 +116,8 @@
       <div class="title">
         <h1>🎡 룰렛</h1>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-s" id="btnReset">↺ 초기화</button>
-          <button class="btn btn-ghost btn-s" id="btnBig">🖥 대형</button>
+          <button class="btn btn-s" id="btnReset">↺ 초기화</button>
+          <button class="btn btn-s" id="btnBig">🖥 대형</button>
         </div>
       </div>
 
@@ -130,25 +135,27 @@
         <h2>입력 · 불러오기</h2>
         <div class="input-row">
           <input id="itemInput" class="input" type="text" placeholder="한 줄에 1개 입력 후 Enter" />
-          <button class="btn" id="btnAdd">+ 추가</button>
-        </div>
-        <div class="grid-2" style="margin-top:8px">
-          <button class="btn btn-ghost" id="btnToggleList">👁 항목 보기/숨기기</button>
-          <button class="btn btn-ghost" id="btnLoadFile">📁 파일 불러오기 (.txt/.csv)</button>
-          <input id="fileInput" type="file" accept=".txt,.csv" class="hidden" />
-          <button class="btn btn-ghost" id="btnDownloadSamples">⬇ 샘플 내려받기</button>
-          <button class="btn btn-ok" id="btnSave">💾 저장하기</button>
-          <button class="btn btn-danger btn-s" id="btnClearWeight">전체 비중 지우기</button>
-        </div>
-        <div class="note" style="margin-top:6px">
-          • TXT: 줄마다 항목 · CSV: <code>label,weight</code> (weight 생략 가능)
+          <button class="btn btn-primary" id="btnAdd">+ 추가</button>
         </div>
 
-        <!-- 항목+비중 편집 테이블(입력 직후 바로 표시) -->
+        <div class="grid-2" style="margin-top:8px">
+          <button class="btn" id="btnToggleList">👁 항목 보기/숨기기</button>
+          <button class="btn" id="btnLoadFile">📁 파일 불러오기 (.txt/.csv)</button>
+          <input id="fileInput" type="file" accept=".txt,.csv" class="hidden" />
+          <button class="btn" id="btnDownloadSamples">⬇ 샘플 내려받기</button>
+          <button class="btn" id="btnSave">💾 저장하기</button>
+        </div>
+
+        <div class="note" style="margin-top:6px">• TXT: 줄마다 항목 · CSV: <code>label,weight</code> (weight 생략 가능)</div>
+
+        <!-- 항목+비중 편집 테이블 -->
         <div id="editorWrap" class="table hidden" style="margin-top:10px">
+          <div class="toolbar">
+            <button class="btn btn-s" id="btnClearWeight">전체 비중 지우기</button>
+          </div>
           <table>
             <thead>
-              <tr><th class="td-index">#</th><th>항목</th><th style="width:110px">비중</th><th class="td-actions">작업</th></tr>
+              <tr><th class="td-index">#</th><th>항목</th><th style="width:100px">비중</th><th class="td-actions"></th></tr>
             </thead>
             <tbody id="itemTable"></tbody>
           </table>
@@ -167,9 +174,9 @@
       </div>
       <div class="section">
         <h2>추첨 기록</h2>
-        <div class="grid-2" style="margin-bottom:8px">
-          <button class="btn btn-ghost btn-s" id="btnToggleLog">📝 기록 보기/숨기기</button>
-          <button class="btn btn-danger btn-s" id="btnClearLog">🗑 삭제</button>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="btn btn-s" id="btnToggleLog">📝 기록 보기/숨기기</button>
+          <button class="btn btn-s" id="btnClearLog">🗑 삭제</button>
         </div>
         <div id="logBox" class="hidden" style="max-height:180px;overflow:auto;font-size:13px;opacity:.9"></div>
       </div>
@@ -252,7 +259,7 @@ function drawWheel(){
 
       ctx.save(); ctx.rotate(s.center);
       const rr=R*0.72;
-      ctx.fillStyle="rgba(4,7,22,.35)"; roundedRect(ctx, rr-92, -22, 184, 44, 12); ctx.fill();
+      roundedRect(ctx, rr-92, -22, 184, 44, 12); ctx.fillStyle="rgba(4,7,22,.35)"; ctx.fill();
       ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
       ctx.font="700 28px ui-sans-serif,system-ui,'Noto Sans KR'"; ctx.fillText(s.label, rr, 0);
       ctx.restore();
@@ -278,7 +285,7 @@ function pickIndexWeighted(){
 function targetAngleForIndex(i){
   const desired = POINTER_ANGLE - segments[i].center;
   const delta = norm(desired - angle);
-  const turns = 6 + Math.floor(Math.random()*2);
+  const turns = 6 + Math.floor(Math.random()*2); // 6~7바퀴
   return angle + turns*TWO_PI + delta;
 }
 function spin(){
@@ -307,15 +314,21 @@ function onWin(idx){
   }
 }
 
-/* ===== Editor (in-input layout) ===== */
+/* ===== Editor (same section) ===== */
 function renderEditor(){
-  // 테이블 행 렌더링
   itemTable.innerHTML = items.length ? items.map((o,i)=>`
     <tr>
       <td class="td-index">${i+1}.</td>
       <td class="td-label"><input data-k="${i}" class="ipt-label" value="${escapeHtml(o.label)}" /></td>
-      <td class="td-weight"><input data-k="${i}" class="ipt-weight" type="number" min="0" step="0.1" placeholder="미입력" value="${o.weight??''}"/></td>
-      <td class="td-actions"><button class="btn btn-ghost btn-s btn-del" data-k="${i}">삭제</button></td>
+      <td class="td-weight"><input data-k="${i}" class="ipt-weight" type="number" min="0" step="0.1" placeholder="-" value="${o.weight??''}"/></td>
+      <td class="td-actions">
+        <button class="icon-btn btn-del" title="삭제" data-k="${i}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2m1 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#d7dcff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 11v6M14 11v6" stroke="#d7dcff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </td>
     </tr>`).join('') : `<tr><td colspan="4" style="opacity:.7;padding:12px">항목이 없습니다.</td></tr>`;
 }
 function showEditor(){ renderEditor(); show(editorWrap); }
@@ -334,19 +347,18 @@ function addFromInput(){
 qs('btnAdd').addEventListener('click', addFromInput);
 ipt.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing){ e.preventDefault(); addFromInput(); }});
 
-/* 테이블 편집 이벤트 위임 */
+/* 테이블 편집 이벤트 */
 itemTable.addEventListener('input', e=>{
   if(e.target.classList.contains('ipt-weight')){
-    const k=+e.target.dataset.k; const v=e.target.value;
-    items[k].weight = (v===''? null : Number(v));
+    const k=+e.target.dataset.k; const v=e.target.value; items[k].weight = (v===''? null : Number(v));
   }
   if(e.target.classList.contains('ipt-label')){
     const k=+e.target.dataset.k; items[k].label = e.target.value;
   }
 });
 itemTable.addEventListener('click', e=>{
-  if(e.target.classList.contains('btn-del')){
-    const k=+e.target.dataset.k; items.splice(k,1); renderEditor(); rebuildSegments();
+  if(e.target.closest('.btn-del')){
+    const k=+e.target.closest('.btn-del').dataset.k; items.splice(k,1); renderEditor(); rebuildSegments();
     if(!items.length) hideEditor();
   }
 });
@@ -355,7 +367,7 @@ itemTable.addEventListener('click', e=>{
 qs('btnSave').addEventListener('click', ()=>{ rebuildSegments(); hideEditor(); alert('저장 완료! 룰렛에 반영했습니다.'); });
 qs('btnClearWeight').addEventListener('click', ()=>{ items.forEach(o=>o.weight=null); renderEditor(); rebuildSegments(); });
 
-/* 항목 보기/숨기기 토글 */
+/* 항목 보기/숨기기 */
 qs('btnToggleList').addEventListener('click', ()=>{ if(editorWrap.classList.contains('hidden')) renderEditor(); toggle(editorWrap); });
 
 /* 기록 */
@@ -478,7 +490,7 @@ rebuild();
 <\/script></body></html>`;
 }
 
-/* ===== Init ===== */
+/* Init */
 rebuildSegments(); drawWheel();
 </script>
 </body>
