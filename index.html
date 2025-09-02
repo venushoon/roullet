@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>룰렛 프로그램</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎡 룰렛 프로그램</h1>
+    <div class="controls">
+      <div>
+        <input id="items" type="text" placeholder="예: A,B,C,D">
+        <button onclick="addItems()">추가</button>
+      </div>
+      <div class="options">
+        <button onclick="shuffleItems()">항목 섞기</button>
+        <button onclick="openBig()">대형 룰렛</button>
+        <label><input type="checkbox" id="allowDuplicate"> 뽑기 중복 허용</label>
+      </div>
+      <div class="screen">
+        <button onclick="zoomIn()">화면확대</button>
+        <button onclick="zoomOut()">화면축소</button>
+        <button onclick="resetZoom()">기본설정</button>
+      </div>
+    </div>
+    <canvas id="wheel" width="400" height="400"></canvas>
+    <div class="actions">
+      <button class="start" onclick="spin()">추첨 시작</button>
+      <button onclick="reset()">초기화</button>
+    </div>
+    <div id="result"></div>
+  </div>
+  <script src="roullet.js"></script>
+</body>
+</html>
