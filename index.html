@@ -1,36 +1,600 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>룰렛 프로그램</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>룰렛 프로그램 | Roullet</title>
+<style>
+  :root{
+    --bg-1:#0f1220;
+    --bg-2:#171a2b;
+    --glass:#1b2142cc;
+    --text:#e9ecf1;
+    --muted:#9aa3b2;
+    --primary:#5865F2; /* indigo */
+    --primary-2:#7c8bff;
+    --accent:#22c55e;  /* green */
+    --danger:#ef4444;  /* red */
+    --warning:#f59e0b; /* amber */
+    --ring: 0 0 0 3px rgba(88,101,242,.28);
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif,system-ui, -apple-system, "Segoe UI",Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 20% 0%, #1f294e55, transparent 60%),
+      radial-gradient(800px 600px at 100% 100%, #2a3a8a40, transparent 60%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  }
+  .wrap{
+    display:grid;
+    grid-template-columns: minmax(320px,1fr) 380px;
+    gap:20px;
+    height:100%;
+    padding:20px;
+  }
+  .panel{
+    background:var(--glass);
+    backdrop-filter: blur(8px);
+    border:1px solid #2a2f55;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .left{
+    position:relative;
+    display:grid;
+    grid-template-rows: auto 1fr;
+    align-items:center;
+    justify-items:center;
+    padding:24px;
+  }
+  .title{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .title h1{
+    font-size:18px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:.2px;
+    color:#fff;
+    opacity:.9;
+  }
+  .pointer {
+    position:absolute;
+    top:82px;
+    left:50%;
+    width:0;height:0;
+    transform: translateX(-50%);
+    border-left: 16px solid transparent;
+    border-right:16px solid transparent;
+    border-bottom:24px solid #ff445a;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.4));
+  }
+  .canvas-box{
+    width: min(90vmin, 900px);
+    aspect-ratio: 1 / 1;
+    display:grid;
+    place-items:center;
+  }
+  canvas{
+    width:100%; height:100%;
+  }
+
+  .right{
+    display:flex;
+    flex-direction:column;
+    padding:18px;
+    gap:14px;
+  }
+
+  .section{
+    padding:14px;
+    border-radius:12px;
+    background: #12173180;
+    border:1px solid #2a2f55;
+  }
+  .section h2{
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.4px;
+    margin:0 0 10px 0;
+    color:#cfd6ff;
+    text-transform: uppercase;
+  }
+
+  /* INPUT */
+  .input-row{
+    display:flex; gap:10px; align-items:center;
+  }
+  .input{
+    flex:1;
+    padding:12px 14px;
+    border-radius:12px;
+    border:1px solid #2f3566;
+    background:#0f1433;
+    color:var(--text);
+    outline:none;
+    transition: box-shadow .15s, border-color .15s;
+    font-size:15px;
+  }
+  .input::placeholder{color:#7380a3}
+  .input:focus{ box-shadow: var(--ring); border-color: var(--primary-2); }
+
+  /* TAG LIST */
+  .chips{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; max-height:120px; overflow:auto;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#222a54; color:#dfe5ff;
+    border:1px solid #33408a; padding:8px 10px; border-radius:999px; font-size:13px;
+  }
+  .chip button{
+    background:transparent; border:none; color:#aeb8ff; cursor:pointer; padding:0; line-height:1;
+  }
+
+  /* BUTTONS */
+  .btn{
+    all:unset;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 14px; border-radius:12px; cursor:pointer;
+    color:#fff; font-weight:700; letter-spacing:.2px; font-size:14px;
+    background: linear-gradient(180deg, #2a33a8, #1b2088);
+    border:1px solid #4b57ff66;
+    box-shadow: 0 10px 20px rgba(37,48,140,.35);
+    transition: transform .08s ease, filter .2s ease, background .2s ease;
+    user-select:none;
+  }
+  .btn:active{ transform: translateY(1px) }
+  .btn:hover{ filter: brightness(1.05) }
+
+  .btn-ghost{
+    background:#0e1435; border:1px solid #2d3470;
+    box-shadow:none; color:#d7dcff;
+  }
+  .btn-success{
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    border-color:#34d39944;
+  }
+  .btn-danger{
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+    border-color:#ef444455;
+  }
+  .btn-warning{
+    background: linear-gradient(180deg, #f59e0b, #d97706);
+    border-color:#fbbf2444;
+    color:#1b1203;
+  }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .stack-vert{ display:flex; flex-direction:column; gap:8px; }
+
+  .kbd{font:600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color:#a3b1ff; background:#141a39; padding:4px 8px; border-radius:6px; border:1px solid #2d3470}
+
+  .note{ color:var(--muted); font-size:12px }
+
+  /* result toast */
+  .result-toast{
+    position:absolute; inset:auto 0 16px 0; display:grid; place-items:center; pointer-events:none;
+  }
+  .result-badge{
+    display:inline-block; padding:10px 14px; border-radius:999px; font-size:18px; font-weight:900;
+    background:#11163aee; border:1px solid #33408a; box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 980px){
+    .wrap{ grid-template-columns: 1fr; }
+    .pointer{ top:72px }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎡 룰렛 프로그램</h1>
-    <div class="controls">
-      <div>
-        <input id="items" type="text" placeholder="예: A,B,C,D">
-        <button onclick="addItems()">추가</button>
+  <div class="wrap">
+    <!-- LEFT: Wheel -->
+    <div class="panel left">
+      <div class="title">
+        <h1>🎡 룰렛</h1>
+        <div class="stack-vert" style="flex-direction:row; gap:8px">
+          <button class="btn btn-success" id="btnStart">▶ 추첨 시작</button>
+          <button class="btn btn-ghost" id="btnReset">↺ 초기화</button>
+        </div>
       </div>
-      <div class="options">
-        <button onclick="shuffleItems()">항목 섞기</button>
-        <button onclick="openBig()">대형 룰렛</button>
-        <label><input type="checkbox" id="allowDuplicate"> 뽑기 중복 허용</label>
+      <div class="pointer" aria-hidden="true"></div>
+      <div class="canvas-box">
+        <canvas id="wheel" width="900" height="900"></canvas>
       </div>
-      <div class="screen">
-        <button onclick="zoomIn()">화면확대</button>
-        <button onclick="zoomOut()">화면축소</button>
-        <button onclick="resetZoom()">기본설정</button>
+      <div class="result-toast" aria-live="polite" aria-atomic="true">
+        <div id="resultBadge" class="result-badge" style="display:none"></div>
       </div>
     </div>
-    <canvas id="wheel" width="400" height="400"></canvas>
-    <div class="actions">
-      <button class="start" onclick="spin()">추첨 시작</button>
-      <button onclick="reset()">초기화</button>
-    </div>
-    <div id="result"></div>
+
+    <!-- RIGHT: Controls -->
+    <aside class="panel right">
+      <!-- 입력 -->
+      <div class="section">
+        <h2>입력</h2>
+        <div class="input-row">
+          <input id="itemInput" class="input" type="text" placeholder="한 줄에 1개 입력 후 Enter" />
+          <button class="btn" id="btnAdd">Add</button>
+        </div>
+        <div class="note" style="margin-top:6px">예) 홍길동 ↵, 1반 ↵, 초콜릿 ↵ … <span class="kbd">Enter</span> 로 추가</div>
+        <div id="chipList" class="chips"></div>
+      </div>
+
+      <!-- 옵션 -->
+      <div class="section stack-vert">
+        <h2>옵션</h2>
+        <div class="grid-2">
+          <button class="btn" id="btnShuffle">🔀 항목 섞기</button>
+          <button class="btn" id="btnBig">🖥 대형 룰렛</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <input id="chkDupe" type="checkbox" />
+          뽑기 중복 허용
+        </label>
+      </div>
+
+      <!-- 화면 조정 -->
+      <div class="section">
+        <h2>화면 조정</h2>
+        <div class="grid-2">
+          <button class="btn btn-ghost" id="btnZoomIn">＋ 확대</button>
+          <button class="btn btn-ghost" id="btnZoomOut">－ 축소</button>
+        </div>
+        <div class="stack-vert" style="margin-top:8px">
+          <button class="btn btn-warning" id="btnZoomReset">기본 설정</button>
+        </div>
+      </div>
+
+      <!-- 안내 -->
+      <div class="section">
+        <h2>도움말</h2>
+        <div class="note">
+          • 결과 뱃지를 클릭하면 다시 숨겨집니다.<br/>
+          • 대형 룰렛은 별도 창으로 열리며 현재 항목/설정을 자동 공유합니다.
+        </div>
+      </div>
+    </aside>
   </div>
-  <script src="roullet.js"></script>
+
+<script>
+/* ---------- State ---------- */
+let items = ["1등","2등","3등","4등","5등","6등"];
+let allowDuplicate = false;
+let angle = 0, spinning = false;
+const TWO_PI = Math.PI * 2;
+
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const chipList = document.getElementById('chipList');
+const resultBadge = document.getElementById('resultBadge');
+
+/* ---------- Utilities ---------- */
+const rand = (min, max) => Math.random() * (max - min) + min;
+const shuffle = (arr) => arr.sort(()=>Math.random()-0.5);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function saveStateToStorage(){
+  localStorage.setItem('roullet_items', JSON.stringify(items));
+  localStorage.setItem('roullet_allowDupe', allowDuplicate ? '1' : '0');
+}
+function loadStateFromStorage(){
+  const s = localStorage.getItem('roullet_items');
+  const d = localStorage.getItem('roullet_allowDupe');
+  if (s){ try{ items = JSON.parse(s); }catch{} }
+  allowDuplicate = d === '1';
+  document.getElementById('chkDupe').checked = allowDuplicate;
+}
+
+/* ---------- Drawing ---------- */
+function drawWheel(){
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.rotate(angle);
+
+  const n = Math.max(items.length,1);
+  const arc = TWO_PI / n;
+  const R = Math.min(W,H)/2 - 14;
+
+  // Segments
+  for (let i=0;i<n;i++){
+    const start = i*arc, end = start + arc;
+    // modern palette per slice using HSL
+    const hue = Math.floor((360/n)*i);
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0,R,start,end);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(${hue} 75% 50%)`;
+    ctx.fill();
+
+    // divider
+    ctx.strokeStyle = "rgba(5,10,30,.6)";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0,0,R,start,end);
+    ctx.stroke();
+
+    // label
+    ctx.save();
+    ctx.rotate(start + arc/2);
+    ctx.fillStyle = "#0b0f24";
+    // label badge
+    const badgeR = R*0.72;
+    roundedRect(ctx, badgeR-64, -20, 128, 40, 12);
+    ctx.fillStyle = "rgba(4,7,22,.35)";
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 34px ui-sans-serif, system-ui, 'Noto Sans KR'";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(items[i] ?? "", badgeR, 0);
+    ctx.restore();
+  }
+
+  // center hub
+  ctx.beginPath();
+  ctx.arc(0,0,80,0,TWO_PI);
+  const grd = ctx.createRadialGradient(0,0,12,0,0,80);
+  grd.addColorStop(0,"#2b3aa5");
+  grd.addColorStop(1,"#131b5e");
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// helper for rounded rect
+function roundedRect(ctx, x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* ---------- Spin Logic ---------- */
+function spin(){
+  if (spinning || items.length===0) return;
+  hideResult();
+  spinning = true;
+
+  // easing: accelerate then decelerate
+  const baseTurns = 6; // base full rotations
+  const extra = rand(0, 360); // additional degrees
+  const targetAngle = angle + (baseTurns*360 + extra) * (Math.PI/180);
+
+  const duration = rand(3000, 4200);
+  const startAngle = angle;
+  const t0 = performance.now();
+
+  tickLoopStart();
+
+  (function animate(now){
+    const t = clamp((now - t0)/duration, 0, 1);
+    // easeInOutCubic
+    const ease = t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+    angle = startAngle + (targetAngle - startAngle) * ease;
+
+    drawWheel();
+    if (t < 1){
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+      tickLoopStop();
+      showResult();
+    }
+  })(t0);
+}
+
+function getSelectedIndex(){
+  const n = Math.max(items.length,1);
+  const arc = TWO_PI / n;
+  // pointer is at angle = 0 (top). Convert current angle to index.
+  const a = (TWO_PI - (angle % TWO_PI) + arc/2) % TWO_PI;
+  return Math.floor(a / arc) % n;
+}
+
+function showResult(){
+  const idx = getSelectedIndex();
+  const pick = items[idx];
+  resultBadge.textContent = `🎉 당첨: ${pick}`;
+  resultBadge.style.display = 'inline-block';
+
+  // sound: win
+  playSound('win');
+
+  // remove when duplicates not allowed
+  if (!allowDuplicate){
+    items.splice(idx,1);
+    renderChips();
+    saveStateToStorage();
+    drawWheel();
+  }
+}
+function hideResult(){
+  resultBadge.style.display='none';
+}
+resultBadge?.addEventListener('click', hideResult);
+
+/* ---------- Sounds (optional, files 넣으면 동작) ---------- */
+let tickTimer=null;
+function playSound(name){
+  const srcs = {
+    tick:'assets/sounds/tick-fast.mp3',
+    win:'assets/sounds/win.mp3',
+    btn:'assets/sounds/button.mp3'
+  };
+  const src = srcs[name];
+  if (!src) return;
+  const a = new Audio(src);
+  a.volume = name==='tick' ? .25 : .6;
+  a.play().catch(()=>{});
+}
+function tickLoopStart(){
+  tickLoopStop();
+  tickTimer = setInterval(()=>playSound('tick'), 80);
+}
+function tickLoopStop(){
+  if (tickTimer){ clearInterval(tickTimer); tickTimer=null; }
+}
+
+/* ---------- UI Wiring ---------- */
+function renderChips(){
+  chipList.innerHTML = '';
+  items.forEach((v,i)=>{
+    const el = document.createElement('span');
+    el.className='chip';
+    el.innerHTML = `<span>${escapeHtml(v)}</span><button title="삭제" data-i="${i}">✕</button>`;
+    chipList.appendChild(el);
+  });
+}
+chipList.addEventListener('click', (e)=>{
+  if (e.target.tagName==='BUTTON'){
+    const i = +e.target.dataset.i;
+    items.splice(i,1);
+    renderChips();
+    saveStateToStorage();
+    drawWheel();
+  }
+});
+
+function addFromInput(){
+  const ipt = document.getElementById('itemInput');
+  const val = ipt.value.trim();
+  if (!val) return;
+  items.push(val);
+  ipt.value='';
+  renderChips();
+  saveStateToStorage();
+  drawWheel();
+  playSound('btn');
+}
+document.getElementById('itemInput').addEventListener('keydown', (e)=>{
+  if (e.key==='Enter'){ addFromInput(); }
+});
+document.getElementById('btnAdd').addEventListener('click', addFromInput);
+
+document.getElementById('btnShuffle').addEventListener('click', ()=>{
+  shuffle(items);
+  renderChips(); saveStateToStorage(); drawWheel(); playSound('btn');
+});
+document.getElementById('chkDupe').addEventListener('change', (e)=>{
+  allowDuplicate = e.target.checked;
+  saveStateToStorage(); playSound('btn');
+});
+document.getElementById('btnStart').addEventListener('click', ()=>{ playSound('btn'); spin(); });
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  angle=0; drawWheel(); hideResult(); playSound('btn');
+});
+
+let zoom=1;
+document.getElementById('btnZoomIn').addEventListener('click', ()=>{ zoom = clamp(zoom+0.1, .6, 1.6); document.querySelector('.left').style.transform=`scale(${zoom})`; document.querySelector('.left').style.transformOrigin='top left'; });
+document.getElementById('btnZoomOut').addEventListener('click', ()=>{ zoom = clamp(zoom-0.1, .6, 1.6); document.querySelector('.left').style.transform=`scale(${zoom})`; document.querySelector('.left').style.transformOrigin='top left'; });
+document.getElementById('btnZoomReset').addEventListener('click', ()=>{ zoom = 1; document.querySelector('.left').style.transform='none'; });
+
+document.getElementById('btnBig').addEventListener('click', ()=>{
+  saveStateToStorage();
+  const w = window.open('', '_blank', 'width=1000,height=900');
+  w.document.write(bigHtml);
+  w.document.close();
+});
+
+/* ---------- Big Screen Template (inline) ---------- */
+const bigHtml = `
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8" />
+<title>대형 룰렛</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html,body{height:100%;margin:0;background:#0a0d1f;color:#fff;font-family:ui-sans-serif,system-ui,'Noto Sans KR',sans-serif}
+  .stage{display:grid;place-items:center;height:100%;gap:16px}
+  .pointer{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:26px solid #ff445a;filter: drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+  canvas{width:min(92vmin,1100px);height:min(92vmin,1100px)}
+  .controls{position:fixed;right:16px;top:16px;display:flex;gap:8px}
+  .btn{all:unset;background:#1a1f42d9;border:1px solid #3a47b8aa;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800}
+</style>
+</head><body>
+<div class="controls">
+  <button class="btn" id="start">▶ 시작</button>
+  <button class="btn" id="reset">↺ 초기화</button>
+</div>
+<div class="stage">
+  <div class="pointer"></div>
+  <canvas id="C" width="1300" height="1300"></canvas>
+  <div id="R" style="font-size:28px;font-weight:900"></div>
+</div>
+<script>
+  const C = document.getElementById('C');
+  const X = C.getContext('2d');
+  let items = JSON.parse(localStorage.getItem('roullet_items')||'[]');
+  let allow = localStorage.getItem('roullet_allowDupe')==='1';
+  let ang=0, spin=false;
+  const PI=Math.PI*2;
+  function draw(){
+    const W=C.width,H=C.height; X.clearRect(0,0,W,H);
+    X.save(); X.translate(W/2,H/2); X.rotate(ang);
+    const n=Math.max(items.length,1), arc=PI/n, R=Math.min(W,H)/2-16;
+    for(let i=0;i<n;i++){
+      const s=i*arc, e=s+arc, hue=Math.floor((360/n)*i);
+      X.beginPath(); X.moveTo(0,0); X.arc(0,0,R,s,e); X.closePath();
+      X.fillStyle=\`hsl(\${hue} 75% 50%)\`; X.fill();
+      X.strokeStyle="rgba(5,10,30,.55)"; X.lineWidth=8;
+      X.beginPath(); X.arc(0,0,R,s,e); X.stroke();
+      X.save(); X.rotate(s+arc/2);
+      X.fillStyle="#fff"; X.font="700 46px ui-sans-serif,'Noto Sans KR'";
+      X.textAlign="center"; X.textBaseline="middle";
+      X.fillText(items[i]??"", R*0.72, 0); X.restore();
+    }
+    X.restore();
+  }
+  function idx(){
+    const n=Math.max(items.length,1), arc=PI/n;
+    const a=(PI - (ang%PI) + arc/2)%PI; return Math.floor(a/arc)%n;
+  }
+  function start(){
+    if (spin||items.length===0) return;
+    const base=6*360, extra=Math.random()*360;
+    const tgt=ang + (base+extra)*(Math.PI/180);
+    const dur=3200+Math.random()*900, s=ang, t0=performance.now();
+    spin=true;
+    (function anim(now){
+      const t=Math.min((now-t0)/dur,1);
+      const ease=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      ang = s + (tgt-s)*ease; draw();
+      if(t<1) requestAnimationFrame(anim); else { spin=false; done(); }
+    })(t0);
+  }
+  function done(){
+    const i=idx(), pick=items[i];
+    document.getElementById('R').textContent='🎉 '+pick+' 🎉';
+    if(!allow){ items.splice(i,1); localStorage.setItem('roullet_items', JSON.stringify(items)); draw(); }
+  }
+  document.getElementById('start').onclick=start;
+  document.getElementById('reset').onclick=()=>{ ang=0; draw(); document.getElementById('R').textContent=''; };
+  draw();
+<\/script>
+</body></html>`;
+
+/* ---------- Init ---------- */
+loadStateFromStorage();
+renderChips();
+drawWheel();
+
+/* ---------- Helpers ---------- */
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m])); }
+</script>
 </body>
 </html>
