@@ -43,16 +43,20 @@
   .left{position:relative;display:grid;grid-template-rows:auto 1fr;align-items:center;justify-items:center;padding:24px}
   .title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
   .title h1{font-size:18px;font-weight:800;margin:0;letter-spacing:.2px;opacity:.9}
-  /* 포인터(역삼각형) */
-  .pointer{position:absolute;top:68px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
-  .canvas-box{position:relative;width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center}
+  /* 포인터(역삼각형) - 항상 캔버스 위에 */
+  .pointer{
+    position:absolute;top:68px;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:28px solid #ff5a5a;
+    filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)); z-index:20;
+  }
+  .canvas-box{position:relative;width:min(90vmin, 920px);aspect-ratio:1/1;display:grid;place-items:center;z-index:1}
   canvas{width:100%;height:100%}
   /* 중앙 시작 버튼 */
   .center-start{
     position:absolute; inset:auto; width:160px; height:160px; border-radius:50%;
     display:grid; place-items:center; font-weight:900; font-size:22px; color:#fff;
     background: radial-gradient(circle at 35% 30%, #ffa142, #ff7a1f 60%, #e4551a 100%);
-    border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none;
+    border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none; z-index:10;
   }
   .center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
 
@@ -72,12 +76,18 @@
   table{width:100%;border-collapse:separate;border-spacing:0 8px}
   td{padding:6px 4px}
   td input[type="number"]{width:90px;padding:8px;border-radius:10px;border:1px solid var(--input-br);background:var(--input-bg);color:var(--text)}
-  .result-toast{position:absolute;inset:auto 0 16px 0;display:grid;place-items:center;pointer-events:none}
-  .result-badge{display:inline-block;padding:10px 14px;border-radius:999px;font-size:18px;font-weight:900;background:#11163aee;border:1px solid #33408a;box-shadow:var(--shadow)}
+  /* 결과 중앙 대형 표시 */
+  .result-overlay{
+    position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:15;
+  }
+  .result-badge{
+    display:none; padding:16px 22px; border-radius:16px;
+    font-size:40px; font-weight:900; color:#fff;
+    background:#0b1139e6; border:2px solid #3b4bd4a6; box-shadow:0 18px 32px rgba(0,0,0,.45);
+  }
+  /* 편집/목록은 기본 숨김 */
   #weightEditor{display:none}
   #itemListBox{display:none}
-  .record{font-size:13px;color:var(--muted)}
-  .record b{color:#fff}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}.pointer{top:62px}}
 </style>
 </head>
@@ -98,10 +108,8 @@
       <div class="canvas-box">
         <canvas id="wheel" width="920" height="920"></canvas>
         <button id="btnCenterStart" class="center-start">시작하기</button>
-      </div>
-
-      <div class="result-toast" aria-live="polite" aria-atomic="true">
-        <div id="resultBadge" class="result-badge" style="display:none"></div>
+        <!-- 결과 중앙 오버레이 -->
+        <div class="result-overlay"><div id="resultBadge" class="result-badge"></div></div>
       </div>
     </div>
 
@@ -160,55 +168,57 @@
           <button class="btn btn-ghost" id="btnToggleLog">📝 기록 보기/숨기기</button>
           <button class="btn btn-danger" id="btnClearLog">🗑 기록 삭제</button>
         </div>
-        <div id="logBox" style="display:none;max-height:180px;overflow:auto" class="record"></div>
+        <div id="logBox" style="display:none;max-height:180px;overflow:auto;font-size:13px;opacity:.9"></div>
       </div>
     </aside>
   </div>
 
 <script>
-/* ---------- Helpers ---------- */
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m])); }
+/* ---------- Small helpers ---------- */
+const TWO_PI=Math.PI*2, POINTER_ANGLE=-Math.PI/2;
+const qs=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const norm=a=> (a%TWO_PI + TWO_PI)%TWO_PI;
-function fmtTime(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`}
+const escapeHtml=s=>(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+
+/* robust toggle: works even when CSS sets display:none */
+function toggle(el){
+  const cur = getComputedStyle(el).display;
+  el.style.display = (cur==='none') ? '' : 'none';
+}
 
 /* ---------- State ---------- */
-let items = [];            // [{label, weight:null|number}]
-let segments = [];         // built from items & weights
-let allowDuplicate = true;
-let angle = 0, spinning = false;
-const TWO_PI = Math.PI*2;
-const POINTER_ANGLE = -Math.PI/2;
-const historyLog = [];
+let items=[];         // [{label, weight:null|number}]
+let segments=[];      // built from items
+let allowDuplicate=true;
+let angle=0, spinning=false;
+const historyLog=[];
 
 /* ---------- DOM ---------- */
-const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const resultBadge = document.getElementById('resultBadge');
-const ipt = document.getElementById('itemInput');
-const editTableBody = document.querySelector('#editTable tbody');
-const weightEditor = document.getElementById('weightEditor');
-const itemListBox = document.getElementById('itemListBox');
-const logBox = document.getElementById('logBox');
-const fileInput = document.getElementById('fileInput');
-const btnCenterStart = document.getElementById('btnCenterStart');
+const canvas=qs('wheel'), ctx=canvas.getContext('2d');
+const ipt=qs('itemInput');
+const resultBadge=qs('resultBadge');
+const weightEditor=qs('weightEditor');
+const editTableBody=document.querySelector('#editTable tbody');
+const itemListBox=qs('itemListBox');
+const logBox=qs('logBox');
+const fileInput=qs('fileInput');
+const btnCenterStart=qs('btnCenterStart');
 
 /* ---------- Build segments (weights) ---------- */
 function rebuildSegments(){
   if(items.length===0){ segments=[]; drawWheel(); renderItemList(); return; }
-  const n=items.length;
-  let sumSpecified=0; const unspecified=[];
-  const weights=new Array(n).fill(0);
+  const n=items.length, weights=new Array(n).fill(0), unspecified=[];
+  let sumSpecified=0;
   for(let i=0;i<n;i++){
     const w=Number(items[i].weight);
     if(!isNaN(w) && w>0){ weights[i]=w; sumSpecified+=w; }
     else unspecified.push(i);
   }
-  if(sumSpecified===0){
-    for(let i=0;i<n;i++) weights[i]=100/n;
-  }else{
-    const remaining=Math.max(0,100-sumSpecified);
-    const share=unspecified.length? remaining/unspecified.length : 0;
+  if(sumSpecified===0){ for(let i=0;i<n;i++) weights[i]=100/n; }
+  else{
+    const rem=Math.max(0,100-sumSpecified);
+    const share=unspecified.length? rem/unspecified.length : 0;
     for(const i of unspecified) weights[i]=share;
   }
   const sum=weights.reduce((a,b)=>a+b,0)||1;
@@ -223,36 +233,37 @@ function rebuildSegments(){
   drawWheel(); renderItemList();
 }
 
-/* ---------- Drawing (rim + slices) ---------- */
+/* ---------- Draw wheel (with realistic rim) ---------- */
 function drawWheel(){
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(angle);
 
-  const R = Math.min(W,H)/2 - 36;
-  const rimOuter = R + 26, rimInner = R + 6, innerWhite = R + 2;
+  const R=Math.min(W,H)/2-36;
+  const rimO=R+26,rimI=R+6, innerW=R+2;
 
-  // Rim + shadow
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=18;
-  ctx.beginPath(); ctx.arc(0,0,rimOuter,0,TWO_PI); ctx.fillStyle='#0a0c12'; ctx.fill();
-  ctx.restore();
-  // carve inner
+  // rim + shadow
+  ctx.save(); ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=18;
+  ctx.beginPath(); ctx.arc(0,0,rimO,0,TWO_PI); ctx.fillStyle='#0a0c12'; ctx.fill(); ctx.restore();
+
+  // carve
   ctx.globalCompositeOperation='destination-out';
-  ctx.beginPath(); ctx.arc(0,0,rimInner,0,TWO_PI); ctx.fill();
+  ctx.beginPath(); ctx.arc(0,0,rimI,0,TWO_PI); ctx.fill();
   ctx.globalCompositeOperation='source-over';
+
   // inner white ring
-  ctx.beginPath(); ctx.arc(0,0,innerWhite,0,TWO_PI); ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,innerW,0,TWO_PI); ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.stroke();
+
   // bolts
   for(let i=0;i<8;i++){
-    const a=i*(TWO_PI/8); const r=(rimOuter+rimInner)/2; const x=Math.cos(a)*r, y=Math.sin(a)*r;
+    const a=i*(TWO_PI/8), r=(rimO+rimI)/2, x=Math.cos(a)*r, y=Math.sin(a)*r;
     ctx.beginPath(); ctx.arc(x,y,8,0,TWO_PI); ctx.fillStyle='#e6e8ef'; ctx.fill();
     ctx.beginPath(); ctx.arc(x,y,3.2,0,TWO_PI); ctx.fillStyle='#1b1e2a'; ctx.fill();
   }
 
   if(segments.length){
     for(let i=0;i<segments.length;i++){
-      const s=segments[i]; const hue=Math.floor((360/segments.length)*i);
+      const s=segments[i], hue=Math.floor((360/segments.length)*i);
       ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,s.start,s.end); ctx.closePath();
       ctx.fillStyle=`hsl(${hue} 75% 52%)`; ctx.fill();
       ctx.strokeStyle="rgba(5,10,30,.6)"; ctx.lineWidth=6;
@@ -281,7 +292,7 @@ function drawWheel(){
 }
 function roundedRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
-/* ---------- Spin ---------- */
+/* ---------- Spin (ease-out + exact stop) ---------- */
 function pickIndexWeighted(){
   const total=segments.reduce((a,s)=>a+(s.end-s.start),0);
   let r=Math.random()*total, acc=0;
@@ -291,7 +302,7 @@ function pickIndexWeighted(){
 function targetAngleForIndex(i){
   const desired = POINTER_ANGLE - segments[i].center;
   const delta = norm(desired - angle);
-  const turns = 6 + Math.floor(Math.random()*2); // 6~7 바퀴
+  const turns = 6 + Math.floor(Math.random()*2); // 6~7
   return angle + turns*TWO_PI + delta;
 }
 function spin(){
@@ -301,7 +312,7 @@ function spin(){
   const start=angle, duration=3600+Math.random()*1400, t0=performance.now();
   (function anim(now){
     const t=Math.min((now-t0)/duration,1), ease=1-Math.pow(1-t,3);
-    angle = start + (target-start)*ease; drawWheel();
+    angle=start+(target-start)*ease; drawWheel();
     if(t<1) requestAnimationFrame(anim); else { angle=target; drawWheel(); onWin(idx); spinning=false; btnCenterStart.disabled=false; }
   })(t0);
 }
@@ -313,49 +324,45 @@ function getIndexAtPointer(){
 function onWin(idx){
   const ptr=getIndexAtPointer(); const final=ptr>=0?ptr:idx;
   const pick=segments[final].label;
-  resultBadge.textContent = `🎉 당첨: ${pick}`; resultBadge.style.display='inline-block';
-  historyLog.unshift({t:new Date(), v:pick}); renderLog();
-  if(!allowDuplicate){ const k=items.findIndex(o=>o.label===pick); if(k>=0){ items.splice(k,1); rebuildSegments(); buildWeightEditor(); } }
+  resultBadge.textContent = `🎉 ${pick}`;
+  resultBadge.style.display='inline-block';
+  historyLog.unshift({t:new Date(), v:pick});
+  renderLog();
+  if(!allowDuplicate){
+    const k=items.findIndex(o=>o.label===pick); if(k>=0){ items.splice(k,1); rebuildSegments(); buildWeightEditor(); }
+  }
 }
-function hideResult(){ resultBadge.style.display='none' }
+function hideResult(){ resultBadge.style.display='none'; }
 
 /* ---------- Input / List ---------- */
-let composing=false, lastAdded='', lastAt=0;
+let composing=false;
 ipt.addEventListener('compositionstart',()=>{composing=true;});
 ipt.addEventListener('compositionend',()=>{composing=false;});
 function addFromInput(){
   if(composing) return;
-  let v=(ipt.value||'').replace(/\s+/g,' ').trim();
-  if(!v) return;
-  const now=Date.now(); if(v===lastAdded && now-lastAt<250) return;
-  lastAdded=v; lastAt=now;
-  items.push({label:v, weight:null});
-  ipt.value=''; rebuildSegments(); buildWeightEditor();
+  let v=(ipt.value||'').replace(/\s+/g,' ').trim(); if(!v) return;
+  items.push({label:v, weight:null}); ipt.value=''; rebuildSegments(); buildWeightEditor();
 }
-document.getElementById('btnAdd').addEventListener('click', addFromInput);
+qs('btnAdd').addEventListener('click', addFromInput);
 ipt.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing){ e.preventDefault(); addFromInput(); }});
-
 function renderItemList(){
-  const list = items.map((o,i)=>`<div>${i+1}. ${escapeHtml(o.label)} <span style="opacity:.7">(${o.weight??'미입력'})</span></div>`).join('') || '<div style="opacity:.7">항목이 없습니다.</div>';
-  itemListBox.innerHTML = list;
+  const html = items.length
+    ? items.map((o,i)=>`<div>${i+1}. ${escapeHtml(o.label)} <span style="opacity:.7">(${o.weight??'미입력'})</span></div>`).join('')
+    : '<div style="opacity:.7">항목이 없습니다.</div>';
+  itemListBox.innerHTML = html;
 }
 
-/* ---------- Editor (open on '비중 편집') ---------- */
+/* ---------- Weight editor ---------- */
 function buildWeightEditor(){
-  const tbody=editTableBody; tbody.innerHTML='';
+  const tb=editTableBody; tb.innerHTML='';
   items.forEach((o,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML = `
-      <td>${escapeHtml(o.label)}</td>
+    tr.innerHTML=`<td>${escapeHtml(o.label)}</td>
       <td><input type="number" min="0" step="0.1" class="w-input" data-i="${i}" value="${o.weight??''}" placeholder="예: 25"/></td>
       <td><button class="btn btn-ghost btn-del" data-i="${i}">삭제</button></td>`;
-    tbody.appendChild(tr);
+    tb.appendChild(tr);
   });
 }
-document.getElementById('btnEditWeights').addEventListener('click', ()=>{
-  weightEditor.style.display = weightEditor.style.display==='none' ? '' : 'none';
-  if(weightEditor.style.display!=='none') buildWeightEditor();
-});
 editTableBody.addEventListener('input', e=>{
   if(e.target.classList.contains('w-input')){
     const i=+e.target.dataset.i; const v=e.target.value;
@@ -367,81 +374,68 @@ editTableBody.addEventListener('click', e=>{
     const i=+e.target.dataset.i; items.splice(i,1); buildWeightEditor(); rebuildSegments();
   }
 });
-document.getElementById('btnSave').addEventListener('click', ()=>{
-  rebuildSegments(); alert('저장 완료! 룰렛에 반영했습니다.');
+qs('btnEditWeights').addEventListener('click', ()=>{
+  // 요구 1: 버튼 반응 없던 문제 → 강건한 토글 + 동적 행 생성
+  if(getComputedStyle(weightEditor).display==='none'){ buildWeightEditor(); }
+  toggle(weightEditor);
 });
-document.getElementById('btnClear').addEventListener('click', ()=>{
-  items.forEach(o=>o.weight=null); buildWeightEditor(); rebuildSegments();
-});
+qs('btnSave').addEventListener('click', ()=>{ rebuildSegments(); alert('저장 완료! 룰렛에 반영했습니다.'); });
+qs('btnClear').addEventListener('click', ()=>{ items.forEach(o=>o.weight=null); buildWeightEditor(); rebuildSegments(); });
 
 /* ---------- Toggles ---------- */
-document.getElementById('btnToggleList').addEventListener('click', ()=>{
-  itemListBox.style.display = itemListBox.style.display==='none' ? '' : 'none';
-});
-document.getElementById('btnToggleLog').addEventListener('click', ()=>{ logBox.style.display = logBox.style.display==='none' ? '' : 'none'; renderLog(); });
+qs('btnToggleList').addEventListener('click', ()=> toggle(itemListBox));
+qs('btnToggleLog').addEventListener('click', ()=>{ toggle(logBox); renderLog(); });
 
 /* ---------- Records ---------- */
+function fmtTime(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`}
 function renderLog(){
-  if(logBox.style.display==='none') return;
+  if(getComputedStyle(logBox).display==='none') return;
   logBox.innerHTML = historyLog.map(r=>`<div>• <b>${escapeHtml(r.v)}</b> <span style="opacity:.75">(${fmtTime(r.t)})</span></div>`).join('');
 }
-document.getElementById('btnClearLog').addEventListener('click', ()=>{ historyLog.length=0; renderLog(); });
+qs('btnClearLog').addEventListener('click', ()=>{ historyLog.length=0; renderLog(); });
 
 /* ---------- Options ---------- */
-document.getElementById('chkDupe').addEventListener('change', e=>{ allowDuplicate = e.target.checked; });
-document.getElementById('chkTheme').addEventListener('change', e=>{ document.documentElement.setAttribute('data-theme', e.target.checked ? 'light' : 'dark'); });
+qs('chkDupe').addEventListener('change', e=>{ allowDuplicate=e.target.checked; });
+qs('chkTheme').addEventListener('change', e=>{ document.documentElement.setAttribute('data-theme', e.target.checked ? 'light' : 'dark'); });
 
-/* ---------- File IO ---------- */
-document.getElementById('btnLoadFile').addEventListener('click', ()=> fileInput.click());
+/* ---------- File I/O ---------- */
+qs('btnLoadFile').addEventListener('click', ()=> fileInput.click());
 fileInput.addEventListener('change', async (e)=>{
   const f=e.target.files[0]; if(!f) return;
   try{
     const text=await f.text(); const name=(f.name||'').toLowerCase();
     let parsed=[];
-    if(name.endsWith('.csv')) parsed=parseCSV(text);
-    else parsed=parseTXT(text);
-    if(parsed.length===0){ alert('파일에서 항목을 찾지 못했습니다.'); return; }
-    items = parsed; buildWeightEditor(); rebuildSegments();
-  }catch(err){ alert('파일을 읽는 중 오류가 발생했습니다.'); console.error(err); }
+    if(name.endsWith('.csv')) parsed=parseCSV(text); else parsed=parseTXT(text);
+    if(!parsed.length){ alert('파일에서 항목을 찾지 못했습니다.'); return; }
+    items=parsed; buildWeightEditor(); rebuildSegments();
+  }catch(err){ alert('파일 읽기 오류'); console.error(err); }
   fileInput.value='';
 });
-function parseTXT(s){
-  return s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean).map(v=>({label:v,weight:null}));
-}
+function parseTXT(s){ return s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean).map(v=>({label:v,weight:null})); }
 function parseCSV(s){
-  const lines=s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
-  const out=[];
+  const lines=s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean), out=[];
   for(let i=0;i<lines.length;i++){
-    const line=lines[i];
-    if(i===0 && /label/i.test(line) && /weight|비중/i.test(line)) continue; // header
-    const [a,b] = line.split(',').map(x=>x?.trim());
-    if(!a) continue;
-    const w = (b==null||b==='') ? null : Number(b);
-    out.push({label:a, weight:isNaN(w)? null : w});
-  }
-  return out;
+    const line=lines[i]; if(i===0 && /label/i.test(line) && /weight|비중/i.test(line)) continue;
+    const [a,b]=(line.split(',')||[]).map(x=>x?.trim()); if(!a) continue;
+    const w=(b==null||b==='')? null : Number(b); out.push({label:a, weight:isNaN(w)? null : w});
+  } return out;
 }
-document.getElementById('btnDownloadSamples').addEventListener('click', ()=>{
+qs('btnDownloadSamples').addEventListener('click', ()=>{
   const txt=`사과\n바나나\n체리\n포도`;
   const csv=`label,weight\n사과,40\n바나나,\n체리,30\n포도,`;
-  download('sample.txt',txt,'text/plain;charset=utf-8');
-  download('sample.csv',csv,'text/csv;charset=utf-8');
+  download('sample.txt',txt,'text/plain;charset=utf-8'); download('sample.csv',csv,'text/csv;charset=utf-8');
 });
-function download(name,content,type){
-  const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-}
+function download(name,content,type){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url); }
 
 /* ---------- Controls ---------- */
-document.getElementById('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
-document.getElementById('btnCenterStart').addEventListener('click', spin);
-document.getElementById('btnBig').addEventListener('click', ()=>{
-  const w = window.open('', '_blank', 'width=1200,height=1000');
-  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle));
-  w.document.close();
+qs('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
+qs('btnCenterStart').addEventListener('click', spin);
+qs('btnBig').addEventListener('click', ()=>{
+  const w=window.open('', '_blank', 'width=1200,height=1000');
+  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close();
 });
 
-/* ---------- Big Screen ---------- */
+/* ---------- Big Screen (same logic) ---------- */
 function bigHtml(theme, itemsInit, dupe, ang){
   return `<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" /><title>대형 룰렛</title>
@@ -462,9 +456,9 @@ const TWO_PI=Math.PI*2, POINTER_ANGLE=-Math.PI/2;
 const C=document.getElementById('C'), X=C.getContext('2d');
 let items=${JSON.stringify(itemsInit)}, allow=${dupe?'true':'false'}, angle=${ang||0}, spinning=false, seg=[];
 function rebuild(){
-  if(items.length===0){seg=[]; draw(); return;}
   let sum=0, uns=[], w=new Array(items.length).fill(0);
   for(let i=0;i<items.length;i++){ const x=Number(items[i].weight); if(x>0){w[i]=x; sum+=x;} else uns.push(i); }
+  if(items.length===0){seg=[]; draw(); return;}
   if(sum===0){ for(let i=0;i<items.length;i++) w[i]=100/items.length; }
   else{ const rem=Math.max(0,100-sum), share=uns.length? rem/uns.length : 0; for(const i of uns) w[i]=share; }
   const s=w.reduce((a,b)=>a+b,0)||1, f=w.map(v=>v/s);
@@ -486,37 +480,29 @@ function draw(){
       const s=seg[i], hue=Math.floor((360/seg.length)*i);
       X.beginPath(); X.moveTo(0,0); X.arc(0,0,R,s.start,s.end); X.closePath(); X.fillStyle=\`hsl(\${hue} 75% 52%)\`; X.fill();
       X.strokeStyle='rgba(5,10,30,.55)'; X.lineWidth=6; X.beginPath(); X.arc(0,0,R,s.start,s.end); X.stroke();
-      X.save(); X.rotate(s.center); X.fillStyle='#fff'; X.font="700 42px ui-sans-serif,'Noto Sans KR'";
-      X.textAlign='center'; X.textBaseline='middle'; X.fillText(s.label, R*0.72, 0); X.restore();
+      X.save(); X.rotate(s.center); X.fillStyle='#fff'; X.font="700 42px ui-sans-serif,'Noto Sans KR'"; X.textAlign='center'; X.textBaseline='middle'; X.fillText(s.label, R*0.72, 0); X.restore();
     }
-  }else{ X.beginPath(); X.arc(0,0,R,0,TWO_PI); X.fillStyle='#3b4a9e'; X.fill(); }
-  X.beginPath(); X.arc(0,0,80,0,TWO_PI);
-  const g=X.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a'); X.fillStyle=g; X.fill();
+  } else { X.beginPath(); X.arc(0,0,R,0,TWO_PI); X.fillStyle='#3b4a9e'; X.fill(); }
+  X.beginPath(); X.arc(0,0,80,0,TWO_PI); const g=X.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a'); X.fillStyle=g; X.fill();
   X.beginPath(); X.arc(0,0,90,0,TWO_PI); X.strokeStyle='rgba(255,255,255,.9)'; X.lineWidth=10; X.stroke();
   X.restore();
 }
-function target(i){ const d=POINTER_ANGLE - seg[i].center; const delta=((d-angle)%TWO_PI+TWO_PI)%TWO_PI; return angle + (6+Math.floor(Math.random()*2))*TWO_PI + delta; }
+function target(i){ const desired=POINTER_ANGLE - seg[i].center; const delta=((desired-angle)%TWO_PI+TWO_PI)%TWO_PI; const turns=6+Math.floor(Math.random()*2); return angle + turns*TWO_PI + delta; }
 function pick(){ const tot=seg.reduce((a,s)=>a+(s.end-s.start),0); let r=Math.random()*tot, acc=0; for(let i=0;i<seg.length;i++){ const len=seg[i].end-seg[i].start; if(r<acc+len) return i; acc+=len; } return seg.length-1; }
 function spin(){ if(spinning||seg.length===0) return; spinning=true; const i=pick(), tgt=target(i), st=angle, dur=3600+Math.random()*1400, t0=performance.now();
- (function anim(now){ const t=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-t,3); angle=st+(tgt-st)*ease; draw(); if(t<1) requestAnimationFrame(anim);
-   else { angle=tgt; draw(); if(!allow){ const k=items.findIndex(o=>o.label===seg[i].label); if(k>=0) items.splice(k,1); rebuild(); } spinning=false; } })(t0); }
+ (function anim(now){ const t=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-t,3); angle=st+(tgt-st)*ease; draw(); if(t<1) requestAnimationFrame(anim); else { angle=tgt; draw(); if(!allow){ const k=items.findIndex(o=>o.label===seg[i].label); if(k>=0) items.splice(k,1); rebuild(); } spinning=false; } })(t0); }
 document.getElementById('start').onclick=spin; document.getElementById('reset').onclick=()=>{ angle=0; draw(); };
 rebuild();
 <\/script></body></html>`;
 }
 
-/* ---------- Initial ---------- */
-rebuildSegments(); // empty start
-drawWheel();
+/* ---------- init ---------- */
+rebuildSegments(); drawWheel();
 
 /* ---------- Buttons ---------- */
-document.getElementById('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
-document.getElementById('btnBig').addEventListener('click', ()=>{
-  const w = window.open('', '_blank', 'width=1200,height=1000');
-  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle));
-  w.document.close();
-});
-document.getElementById('btnCenterStart').addEventListener('click', spin);
+qs('btnReset').addEventListener('click', ()=>{ angle=0; hideResult(); drawWheel(); });
+qs('btnCenterStart').addEventListener('click', spin);
+qs('btnBig').addEventListener('click', ()=>{ const w=window.open('', '_blank', 'width=1200,height=1000'); w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close(); });
 </script>
 </body>
 </html>
