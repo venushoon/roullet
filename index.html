@@ -94,7 +94,6 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- LEFT -->
     <div class="panel left">
       <div class="title">
         <h1>🎡 룰렛</h1>
@@ -112,7 +111,6 @@
       </div>
     </div>
 
-    <!-- RIGHT -->
     <aside class="panel right">
       <div class="section">
         <h2>입력 · 불러오기</h2>
@@ -121,7 +119,6 @@
           <button class="btn btn-primary" id="btnAdd">+ 추가</button>
         </div>
 
-        <!-- 한 줄 3버튼: 항목보기/파일/샘플 -->
         <div class="row-3">
           <button class="btn" id="btnToggleList">👁 항목 보기/숨기기</button>
           <button class="btn" id="btnLoadFile">📁 파일 불러오기</button>
@@ -129,7 +126,6 @@
           <input id="fileInput" type="file" accept=".txt,.csv" class="hidden" />
         </div>
 
-        <!-- 항목+비중 편집 테이블 (툴바: 저장/전체지우기) -->
         <div id="editorWrap" class="table hidden" style="margin-top:10px">
           <div class="toolbar">
             <button class="btn btn-s" id="btnSave">💾 저장하기</button>
@@ -143,7 +139,6 @@
           </table>
         </div>
 
-        <!-- 기록 섹션 -->
         <div class="section" style="margin-top:12px">
           <h2>추첨 기록</h2>
           <div style="display:flex;gap:10px;margin-bottom:8px">
@@ -153,7 +148,6 @@
           <div id="logBox" class="hidden" style="max-height:180px;overflow:auto;font-size:13px;opacity:.9"></div>
         </div>
 
-        <!-- 옵션 + 🔊 SFX 제어 -->
         <div class="section" style="margin-top:12px">
           <h2>옵션</h2>
           <label style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -163,7 +157,6 @@
             <input id="chkTheme" type="checkbox" /> 밝은(프로젝터) 모드
           </label>
 
-          <!-- 🔊 SFX 추가 옵션 -->
           <div class="opt-row" style="margin-top:10px">
             <div class="group">
               <label for="rngVol">볼륨</label>
@@ -509,11 +502,18 @@ qs('btnCenterStart').addEventListener('click', spin);
 qs('btnBig').addEventListener('click', ()=>{
   SFX.play('click',{volume:0.5});
   const w = window.open('', '_blank', 'width=1200,height=1000');
-  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle)); w.document.close();
+  // 현재 SFX 설정(세트, 볼륨, 음소거)을 대형 화면으로 전달
+  const sfxSettings = {
+    set: SFX.getSet(),
+    volume: qs('rngVol').value / 100,
+    mute: qs('chkMute').checked
+  };
+  w.document.write(bigHtml(document.documentElement.getAttribute('data-theme')||'dark', items, allowDuplicate, angle, sfxSettings));
+  w.document.close();
 });
 
-/* 대형 화면(무음) */
-function bigHtml(theme, itemsInit, dupe, ang){
+/* 대형 화면 생성 함수 (수정됨) */
+function bigHtml(theme, itemsInit, dupe, ang, sfxSettings){
   return `<!DOCTYPE html><html lang="ko" data-theme="${theme}"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" /><title>대형 룰렛</title>
 <style>
@@ -527,19 +527,57 @@ canvas{width:min(92vmin,1200px);height:min(92vmin,1200px);z-index:10}
 .controls{position:fixed;right:16px;top:16px;display:flex;gap:8px;z-index:70}
 .btn{all:unset;background:#1a1f42d9;border:1px solid #3a47b8aa;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800;color:#fff}
 html[data-theme="light"] .btn{background:#ffffffdd;border-color:#c9d1ff;color:#1a237e}
-.result{position:fixed;left:0;right:0;bottom:18px;display:grid;place-items:center;z-index:60}
+.result{position:fixed;left:0;right:0;bottom:18px;display:grid;place-items:center;z-index:60;pointer-events:none;}
 .result > div{padding:16px 22px;border-radius:16px;font-size:40px;font-weight:900;color:#fff;background:#0b1139e6;border:2px solid #3b4bd4a6;box-shadow:0 18px 32px rgba(0,0,0,.45)}
+.center-start{
+  position:absolute; width:180px; height:180px; border-radius:50%;
+  display:grid; place-items:center; font-weight:900; font-size:28px; color:#fff;
+  background: radial-gradient(circle at 35% 30%, #ffa142, #ff7a1f 60%, #e4551a 100%);
+  border:12px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none; z-index:40;}
+.center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
 </style></head><body>
-<div class="controls"><button class="btn" id="start">▶ 시작</button><button class="btn" id="reset">↺ 초기화</button></div>
+<div class="controls"><button class="btn" id="reset">↺ 초기화</button></div>
 <div class="stage">
   <div class="pointer"></div>
   <canvas id="C" width="1400" height="1400"></canvas>
+  <button id="start" class="center-start">시작!</button>
 </div>
 <div class="result"><div id="R" style="display:none"></div></div>
 <script>
 const TWO_PI=Math.PI*2, POINTER_ANGLE=-Math.PI/2;
 const C=document.getElementById('C'), X=C.getContext('2d');
-let items=${JSON.stringify(itemsInit)}, allow=${dupe?'true':'false'}, angle=${ang||0}, spinning=false, seg=[];
+let items=${JSON.stringify(itemsInit)}, allow=${dupe}, angle=${ang||0}, spinning=false, seg=[];
+let prevPointerIndex=-1;
+
+const SFX = (()=>{
+  let currentSet='${sfxSettings.set}';
+  let masterVol=${sfxSettings.volume}, mute=${sfxSettings.mute};
+  const map = {
+    quiet: { start:'assets/sfx/quiet/start_soft.mp3', tick:'assets/sfx/quiet/tick_soft.mp3', win:'assets/sfx/quiet/win_soft.mp3' },
+    hype: { start:'assets/sfx/hype/start_hype.mp3', tick:'assets/sfx/hype/tick_hype.mp3', win:'assets/sfx/hype/win_hype.mp3' }
+  };
+  const cache = {};
+  function ensure(set){
+    if(!cache[set]) cache[set]={};
+    for(const k of Object.keys(map[set])){
+      if(!cache[set][k]) { const a = new Audio(map[set][k]); a.preload='auto'; cache[set][k]=a; }
+    }
+  }
+  ensure(currentSet);
+
+  return {
+    play(id,{volume=1,rate=1}={}){
+      if(mute) return;
+      ensure(currentSet);
+      const base = cache[currentSet][id]; if(!base) return;
+      const node = base.cloneNode();
+      node.volume = Math.max(0,Math.min(1, volume*masterVol));
+      try{ node.playbackRate = rate; }catch(e){}
+      node.play().catch(()=>{});
+    }
+  };
+})();
+
 function rebuild(){
   let sum=0, uns=[], w=new Array(items.length).fill(0);
   for(let i=0;i<items.length;i++){ const x=Number(items[i].weight); if(x>0){w[i]=x; sum+=x;} else uns.push(i); }
@@ -575,11 +613,34 @@ function draw(){
 function target(i){ const desired=POINTER_ANGLE - seg[i].center; const delta=((desired-angle)%TWO_PI+TWO_PI)%TWO_PI; const turns=6+Math.floor(Math.random()*2); return angle + turns*TWO_PI + delta; }
 function pick(){ const tot=seg.reduce((a,s)=>a+(s.end-s.start),0); let r=Math.random()*tot, acc=0; for(let i=0;i<seg.length;i++){ const len=seg[i].end-seg[i].start; if(r<acc+len) return i; acc+=len; } return seg.length-1; }
 function getIndexAtPointer(){ const a=((POINTER_ANGLE-angle)%TWO_PI+TWO_PI)%TWO_PI; for(let i=0;i<seg.length;i++){const s=seg[i]; if(s.start<=a && a<s.end) return i; if(i===seg.length-1 && Math.abs(a-s.end)<1e-6) return i;} return -1; }
-function spin(){ if(spinning||seg.length===0) return; spinning=true; const i=pick(), tgt=target(i), st=angle, dur=3600+Math.random()*1400, t0=performance.now();
- (function anim(now){ const t=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-t,3); angle=st+(tgt-st)*ease; draw(); if(t<1) requestAnimationFrame(anim); else { angle=tgt; draw();
-   const idx=(getIndexAtPointer()>=0)?getIndexAtPointer():i; const pickLbl=seg[idx].label; const R=document.getElementById('R'); R.style.display='inline-block'; R.textContent='🎉 '+pickLbl;
-   if(!allow){ const k=items.findIndex(o=>o.label===pickLbl); if(k>=0) items.splice(k,1); rebuild(); } spinning=false; } })(t0); }
-document.getElementById('start').onclick=spin; document.getElementById('reset').onclick=()=>{ angle=0; draw(); document.getElementById('R').style.display='none'; };
+function spin(){
+  if(spinning||seg.length===0) return;
+  spinning=true; document.getElementById('start').disabled=true;
+  document.getElementById('R').style.display='none';
+  SFX.play('start',{volume:0.85});
+  const i=pick(), tgt=target(i), st=angle, dur=3600+Math.random()*1400, t0=performance.now();
+  prevPointerIndex=-1;
+  (function anim(now){
+    const t=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-t,3);
+    angle=st+(tgt-st)*ease; draw();
+    const cur = getIndexAtPointer();
+    if(cur !== -1 && cur !== prevPointerIndex){
+      const rate = 0.95 + 0.25*(1-(1-ease));
+      SFX.play('tick',{volume:0.45, rate});
+      prevPointerIndex = cur;
+    }
+    if(t<1) requestAnimationFrame(anim);
+    else {
+      angle=tgt; draw();
+      const idx=(getIndexAtPointer()>=0)?getIndexAtPointer():i; const pickLbl=seg[idx].label; const R=document.getElementById('R'); R.style.display='inline-block'; R.textContent='🎉 '+pickLbl;
+      SFX.play('win',{volume:0.9});
+      if(!allow){ const k=items.findIndex(o=>o.label===pickLbl); if(k>=0) items.splice(k,1); rebuild(); }
+      spinning=false; document.getElementById('start').disabled=false;
+    }
+  })(t0);
+}
+document.getElementById('start').onclick=spin;
+document.getElementById('reset').onclick=()=>{ angle=0; draw(); document.getElementById('R').style.display='none'; };
 rebuild();
 <\/script></body></html>`;
 }
