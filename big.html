@@ -4,96 +4,14 @@
   <meta charset="UTF-8">
   <title>대형 룰렛</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* 대형 화면에서 중앙 정렬 및 오버레이 요소 배치 */
-    html, body { height: 100%; margin: 0; }
-    .stage {
-      position: relative;
-      height: 100%;
-      display: grid;
-      place-items: center;
-    }
-    /* 포인터(삼각형) */
-    .pointer {
-      position: absolute;
-      top: calc(50% - min(46vmin, 300px) - 20px); /* 캔버스 상단보다 살짝 위 */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0; height: 0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-top: 28px solid #ff5a5a;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,.45));
-      z-index: 2;
-    }
-    /* 캔버스 크기 – 화면에 맞춰 최대 92vmin */
-    #wheel {
-      width: min(92vmin, 1200px);
-      height: min(92vmin, 1200px);
-      display: block;
-    }
-    /* 중앙 시작 버튼(원형) */
-    .center-start {
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      width: 160px; height: 160px;
-      border-radius: 50%;
-      display: grid; place-items: center;
-      font-weight: 900; font-size: 22px; color: #fff;
-      background: radial-gradient(circle at 35% 30%, #ffa142, #ff7a1f 60%, #e4551a 100%);
-      border: 10px solid #fff;
-      box-shadow: 0 14px 24px rgba(0,0,0,.35);
-      cursor: pointer; user-select: none;
-      z-index: 3;
-    }
-    .center-start:disabled { filter: grayscale(.4) brightness(.9); cursor: not-allowed; }
-
-    /* 결과 배지 */
-    .result {
-      position: absolute;
-      left: 0; right: 0; bottom: 24px;
-      display: grid; place-items: center;
-      z-index: 4; pointer-events: none;
-    }
-    .result > div {
-      display: none;
-      padding: 16px 22px; border-radius: 16px;
-      font-size: 40px; font-weight: 900; color: #fff;
-      background: #0b1139e6; border: 2px solid #3b4bd4a6;
-      box-shadow: 0 18px 32px rgba(0,0,0,.45);
-    }
-
-    /* 하단 동작 버튼 영역은 유지하되 기본적으로 숨김(원 요청: 중앙 배치로 전환) */
-    .actions { display: none; }
-  </style>
 </head>
 <body class="big-screen">
-  <div class="stage">
-    <div class="pointer" aria-hidden="true"></div>
-    <canvas id="wheel" width="1400" height="1400"></canvas>
-    <button id="btnCenterStart" class="center-start">추첨 시작</button>
-    <div class="result"><div id="R"></div></div>
-  </div>
-
-  <!-- 기존 구조 호환을 위해 유지(숨김 처리됨) -->
+  <canvas id="wheel" width="600" height="600"></canvas>
   <div class="actions">
     <button class="start" onclick="spin()">추첨 시작</button>
     <button onclick="reset()">초기화</button>
   </div>
   <div id="result"></div>
-
   <script src="roullet.js"></script>
-  <script>
-    // 중앙 버튼에 spin 연결
-    const centerBtn = document.getElementById('btnCenterStart');
-    centerBtn.addEventListener('click', () => {
-      centerBtn.disabled = true;
-      spin().finally(() => { centerBtn.disabled = false; });
-    });
-
-    // roullet.js의 showResult가 내부 #result를 쓰므로 대형 전용 표시를 보강
-    // (roullet.js의 showResult 끝에서 #R 업데이트를 함께 수행하도록 이미 수정됨)
-  </script>
 </body>
 </html>
