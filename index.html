@@ -51,7 +51,7 @@
     border:10px solid #fff; box-shadow:0 14px 24px rgba(0,0,0,.35); cursor:pointer; user-select:none; z-index:40;}
   .center-start:disabled{ filter:grayscale(.4) brightness(.9); cursor:not-allowed; }
   .result-overlay{position:absolute; left:0; right:0; bottom:10px; display:grid; place-items:center; pointer-events:none; z-index:60;}
-  .result-badge{display:none; padding:12px 16px; border-radius:12px; font-size:34px; font-weight:900; color:#fff;
+  .result-badge{padding:12px 16px; border-radius:12px; font-size:34px; font-weight:900; color:#fff;
     background:#0b1139e6; border:2px solid #3b4bd4a6; box-shadow:0 18px 32px rgba(0,0,0,.45);}
 
   .right{display:flex;flex-direction:column;padding:18px;gap:14px}
@@ -107,7 +107,7 @@
         <div class="pointer" aria-hidden="true"></div>
         <canvas id="wheel" width="920" height="920"></canvas>
         <button id="btnCenterStart" class="center-start">시작하기</button>
-        <div class="result-overlay"><div id="resultBadge" class="result-badge"></div></div>
+        <div class="result-overlay"><div id="resultBadge" class="result-badge hidden"></div></div>
       </div>
     </div>
 
