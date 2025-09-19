@@ -603,7 +603,7 @@ function draw(){
       const s=seg[i], hue=Math.floor((360/seg.length)*i);
       X.beginPath(); X.moveTo(0,0); X.arc(0,0,R,s.start,s.end); X.closePath(); X.fillStyle=\`hsl(\${hue} 75% 52%)\`; X.fill();
       X.strokeStyle='rgba(5,10,30,.55)'; X.lineWidth=6; X.beginPath(); X.arc(0,0,R,s.start,s.end); X.stroke();
-      X.save(); X.rotate(s.center); X.fillStyle='#fff'; X.font="700 42px ui-sans-serif,'Noto Sans KR'"; X.textAlign='center'; X.textBaseline='middle'; X.fillText(s.label, R*0.72, 0); X.restore();
+      X.save(); X.rotate(s.center); X.fillStyle='#fff'; X.font="700 52px ui-sans-serif,'Noto Sans KR'"; X.textAlign='center'; X.textBaseline='middle'; X.fillText(s.label, R*0.72, 0); X.restore();
     }
   } else { X.beginPath(); X.arc(0,0,R,0,TWO_PI); X.fillStyle='#3b4a9e'; X.fill(); }
   X.beginPath(); X.arc(0,0,80,0,TWO_PI); const g=X.createRadialGradient(0,0,10,0,0,80); g.addColorStop(0,'#ff8a3d'); g.addColorStop(1,'#e4551a'); X.fillStyle=g; X.fill();
